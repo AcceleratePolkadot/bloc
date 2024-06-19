@@ -2,11 +2,11 @@
 panic = "unwind"
 
 [workspace.package]
-authors = ["R0GUE <go@r0gue.io>"]
+authors = ["Accelerate Polkadot <hello@acceleratepolkadot.com>"]
 edition = "2021"
-homepage = "https://r0gue.io"
+homepage = "https://acceleratepolkadot.com"
 license-file = "LICENSE"
-repository = "https://github.com/r0gue-io/base-parachain"
+repository = "https://github.com/AcceleratePolkadot/bloc"
 
 [workspace]
 members = [
