@@ -34,7 +34,7 @@ substrate-wasm-builder = "22.0.1"
 docify = "0.2.8"
 
 # Local
-parachain-template-runtime = { path = "./runtime" }
+bloc-runtime = { path = "./runtime" }
 
 # Substrate
 frame-benchmarking = { version = "33.0.0", default-features = false }
