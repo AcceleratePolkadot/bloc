@@ -1,8 +1,8 @@
 [package]
-name = "parachain-template-node"
+name = "bloc-node"
 version = "0.1.0"
 authors.workspace = true
-description = "Parachain node template"
+description = "Bloc - a governance parachain"
 license-file.workspace = true
 homepage.workspace = true
 repository.workspace = true
@@ -25,7 +25,7 @@ serde.workspace = true
 serde_json.workspace = true
 
 # Local
-parachain-template-runtime.workspace = true
+bloc-runtime.workspace = true
 
 # Substrate
 frame-benchmarking.workspace = true
@@ -81,14 +81,14 @@ runtime-benchmarks = [
     "cumulus-primitives-core/runtime-benchmarks",
     "frame-benchmarking-cli/runtime-benchmarks",
     "frame-benchmarking/runtime-benchmarks",
-    "parachain-template-runtime/runtime-benchmarks",
+    "bloc-runtime/runtime-benchmarks",
     "polkadot-cli/runtime-benchmarks",
     "polkadot-primitives/runtime-benchmarks",
     "sc-service/runtime-benchmarks",
     "sp-runtime/runtime-benchmarks",
 ]
 try-runtime = [
-    "parachain-template-runtime/try-runtime",
+    "bloc-runtime/try-runtime",
     "polkadot-cli/try-runtime",
     "sp-runtime/try-runtime",
 ]

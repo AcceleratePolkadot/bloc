@@ -11,7 +11,7 @@ validator = true
 
 [[parachains]]
 id = 2000
-default_command = "./target/release/parachain-template-node"
+default_command = "./target/release/bloc-node"
 
 [[parachains.collators]]
-name = "collator-01"
+name = "bloc-collator-01"

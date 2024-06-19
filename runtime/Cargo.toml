@@ -1,8 +1,8 @@
 [package]
-name = "parachain-template-runtime"
+name = "bloc-runtime"
 version = "0.1.0"
 authors.workspace = true
-description = "Parachain runtime template"
+description = "Bloc runtime"
 license-file.workspace = true
 homepage.workspace = true
 repository.workspace = true
