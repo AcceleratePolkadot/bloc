@@ -5,7 +5,7 @@ panic = "unwind"
 authors = ["R0GUE <go@r0gue.io>"]
 edition = "2021"
 homepage = "https://r0gue.io"
-license = "Unlicense"
+license-file = "LICENSE"
 repository = "https://github.com/r0gue-io/base-parachain"
 
 [workspace]
