@@ -12,6 +12,7 @@ repository = "https://github.com/AcceleratePolkadot/bloc"
 members = [
     "node",
     "runtime",
+    "pallets/roster",
 ]
 resolver = "2"
 

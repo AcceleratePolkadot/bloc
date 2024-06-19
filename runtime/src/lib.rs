@@ -34,6 +34,8 @@ use frame_support::{
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 pub use sp_runtime::{MultiAddress, Perbill, Permill};
 
+pub use pallet_roster;
+
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 
@@ -233,6 +235,11 @@ pub fn native_version() -> NativeVersion {
     }
 }
 
+/// Configure the pallet-roster in pallets/roster.
+impl pallet_roster::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
     // While this macro defines the pallets conforming the runtime,
@@ -263,6 +270,9 @@ construct_runtime!(
         PolkadotXcm: pallet_xcm = 31,
         CumulusXcm: cumulus_pallet_xcm = 32,
         MessageQueue: pallet_message_queue = 33,
+
+        // Local
+        Roster: pallet_roster = 40,
     }
 );
 
