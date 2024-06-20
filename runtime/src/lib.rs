@@ -235,11 +235,6 @@ pub fn native_version() -> NativeVersion {
     }
 }
 
-/// Configure the pallet-roster in pallets/roster.
-impl pallet_roster::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-}
-
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
     // While this macro defines the pallets conforming the runtime,

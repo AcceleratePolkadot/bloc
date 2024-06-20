@@ -4,9 +4,9 @@ use frame_support::pallet_macros::*;
 mod errors {
     #[pallet::error]
     pub enum Error<T> {
-        /// Error names should be descriptive.
-        NoneValue,
-        /// Errors should have helpful documentation associated with them.
-        StorageOverflow,
+        /// The roster title is invalid.
+        InvalidRosterTitle,
+        /// A roster with the same title already exists for this account.
+        RosterExists
     }
 }

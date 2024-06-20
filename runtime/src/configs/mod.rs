@@ -273,3 +273,15 @@ impl pallet_collator_selection::Config for Runtime {
     type ValidatorRegistration = Session;
     type WeightInfo = (); // Configure based on benchmarking results.
 }
+
+parameter_types! {
+	pub const TitleMaxLength: u32 = 200;
+	pub const MembersMax: u32 = u32::MAX;
+}
+
+/// Configure the pallet-roster in pallets/roster.
+impl pallet_roster::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+    type TitleMaxLength = TitleMaxLength;
+    type MembersMax = MembersMax;
+}

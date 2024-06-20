@@ -12,6 +12,9 @@ mod config;
 mod errors;
 mod events;
 mod hooks;
+pub mod types;
+
+use crate::types::*;
 
 #[cfg(test)]
 mod mock;
@@ -29,16 +32,22 @@ mod benchmarking;
 #[import_section(calls::calls)]
 #[frame_support::pallet]
 pub mod pallet {
+    use super::*;
     use frame_support::{dispatch::DispatchResultWithPostInfo, pallet_prelude::*};
     use frame_system::pallet_prelude::*;
 
     #[pallet::pallet]
     pub struct Pallet<T>(_);
 
-    // The pallet's runtime storage items.
-    // https://docs.substrate.io/build/runtime-storage/
+    // Keys are the founder's account id and the roster's title, so titles must be unique per founder.
     #[pallet::storage]
-    #[pallet::getter(fn something)]
-    pub type Something<T> = StorageValue<_, u32>;
+    pub type Rosters<T: Config> = StorageDoubleMap<
+        _,
+        Blake2_128Concat,
+        T::AccountId,
+        Blake2_128Concat,
+        RosterTitle<T>,
+        Roster<T>,
+    >;
 
 }
