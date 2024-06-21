@@ -47,7 +47,7 @@ mod calls {
 
             // Create new nomination
             let nomination = Nomination::new((founder, title.clone()), nominee.clone(), nominator.clone());
-            Nominations::<T>::insert(&nominator, &roster_id, nomination);
+            Nominations::<T>::insert(&nominee, &roster_id, nomination);
             Self::deposit_event(Event::NewNomination(nominator, nominee, roster_id, title));
 
             Ok(().into())
