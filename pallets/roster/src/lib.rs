@@ -25,6 +25,7 @@ mod tests;
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
 
+
 #[import_section(hooks::hooks)]
 #[import_section(events::events)]
 #[import_section(errors::errors)]
@@ -41,13 +42,21 @@ pub mod pallet {
 
     // Keys are the founder's account id and the roster's title, so titles must be unique per founder.
     #[pallet::storage]
-    pub type Rosters<T: Config> = StorageDoubleMap<
+    pub type Rosters<T: Config> = StorageMap<
+        _,
+        Blake2_128Concat,
+        RosterId,
+        Roster<T>,
+    >;
+
+    #[pallet::storage]
+    pub type Nominations<T: Config> = StorageDoubleMap<
         _,
         Blake2_128Concat,
         T::AccountId,
         Blake2_128Concat,
-        RosterTitle<T>,
-        Roster<T>,
+        RosterId,
+        Nomination<T>,
     >;
 
 }

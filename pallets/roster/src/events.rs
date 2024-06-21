@@ -7,5 +7,7 @@ mod events {
     pub enum Event<T: Config> {
         /// New roster created [created by, roster title]
         NewRoster(T::AccountId, RosterTitle<T>),
+        /// New nomination [nominator, nominee, roster id, roster title]
+        NewNomination(T::AccountId, T::AccountId, RosterId, RosterTitle<T>),
     }
 }
