@@ -6,14 +6,13 @@ use frame_system::{self as system, pallet_prelude::BlockNumberFor, Config};
 use scale_info::TypeInfo;
 
 use crate::pallet;
-
 pub type RosterTitle<T> = BoundedVec<u8, <T as pallet::Config>::TitleMaxLength>;
 pub type MembersList<T> = BoundedVec<<T as Config>::AccountId, <T as pallet::Config>::MembersMax>;
 #[derive(Clone, Eq, PartialEq, RuntimeDebug, Encode, Decode, TypeInfo, MaxEncodedLen)]
 pub struct RosterId([u8; 16]);
 
 impl RosterId {
-    pub fn from_tuple<T: Config + pallet::Config>((founder, title): (T::AccountId, RosterTitle<T>)) -> Self {
+    pub fn from_tuple<T: Config + pallet::Config>((founder, title): (&T::AccountId, &RosterTitle<T>)) -> Self {
         let mut bytes = founder.encode();
         bytes.extend(title);
         let digest = md5::compute(bytes);
@@ -46,7 +45,7 @@ impl<T: Config + pallet::Config> Roster<T> {
         title: RosterTitle<T>,
     ) -> Self {
         Self {
-            id: RosterId::from_tuple::<T>((founder.clone(), title.clone())),
+            id: RosterId::from_tuple::<T>((&founder, &title)),
             founder,
             title,
             members: BoundedVec::default(),
