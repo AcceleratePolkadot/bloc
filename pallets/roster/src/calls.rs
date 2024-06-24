@@ -8,19 +8,19 @@ mod calls {
     impl<T: Config> Pallet<T> {
         #[pallet::call_index(0)]
         #[pallet::weight(Weight::from_parts(10_000, 0) + T::DbWeight::get().writes(1))]
-        pub fn new_roster(origin: OriginFor<T>, unbounded_title: Vec<u8>) -> DispatchResultWithPostInfo {
+        pub fn new_roster(origin: OriginFor<T>, title: Vec<u8>) -> DispatchResultWithPostInfo {
             let founder = ensure_signed(origin)?;
-            let title: BoundedVec<_, _> = unbounded_title.try_into().map_err(|_| Error::<T>::InvalidRosterTitle)?;
-            let roster_id = RosterId::from_tuple::<T>((&founder, &title));
+            let bounded_title: BoundedVec<_, _> = title.try_into().map_err(|_| Error::<T>::InvalidRosterTitle)?;
+            let roster_id = RosterId::from_tuple::<T>((&founder, &bounded_title));
 
             ensure!(!Rosters::<T>::contains_key(&roster_id), Error::<T>::RosterExists);
 
-            let mut roster = Roster::new(founder.clone(), title.clone());
+            let mut roster = Roster::new(founder.clone(), bounded_title.clone());
             // Add founder as first member
             roster.members.try_push(founder.clone()).map_err(|_| Error::<T>::CouldNotAddMember)?;
             Rosters::<T>::insert(&roster_id, roster);
 
-            Self::deposit_event(Event::NewRoster(founder,  title));
+            Self::deposit_event(Event::NewRoster(founder,  bounded_title));
 
             Ok(().into())
         }
