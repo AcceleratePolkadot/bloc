@@ -20,17 +20,15 @@ mod calls {
             roster.members.try_push(founder.clone()).map_err(|_| Error::<T>::CouldNotAddMember)?;
             Rosters::<T>::insert(&roster_id, roster);
 
-            Self::deposit_event(Event::NewRoster(founder,  bounded_title));
+            Self::deposit_event(Event::NewRoster(founder,  bounded_title, roster_id));
 
             Ok(().into())
         }
 
         #[pallet::call_index(10)]
         #[pallet::weight(Weight::from_parts(10_000, 0) + T::DbWeight::get().writes(1))]
-        pub fn nominate(origin: OriginFor<T>, roster: (T::AccountId, RosterTitle<T>), nominee: T::AccountId) -> DispatchResultWithPostInfo {
+        pub fn nominate(origin: OriginFor<T>, roster_id: RosterId, nominee: T::AccountId) -> DispatchResultWithPostInfo {
             let nominator = ensure_signed(origin)?;
-            let (founder, title) = roster;
-            let roster_id = RosterId::from_tuple::<T>((&founder, &title));
 
             // Roster must exist and be active.
             let nomination_roster = Rosters::<T>::get(&roster_id).ok_or(Error::<T>::RosterDoesNotExist)?;
@@ -46,9 +44,9 @@ mod calls {
             ensure!(!Nominations::<T>::contains_key(&nominee, &roster_id), Error::<T>::AlreadyNominated);
 
             // Create new nomination
-            let nomination = Nomination::new((founder, title.clone()), nominee.clone(), nominator.clone());
+            let nomination = Nomination::new(roster_id.clone(), nominee.clone(), nominator.clone());
             Nominations::<T>::insert(&nominee, &roster_id, nomination);
-            Self::deposit_event(Event::NewNomination(nominator, nominee, roster_id, title));
+            Self::deposit_event(Event::NewNomination(nominator, nominee, roster_id));
 
             Ok(().into())
         }

@@ -65,16 +65,17 @@ pub enum NominationStatus {
 #[derive(Clone, Eq, PartialEq, RuntimeDebug, Encode, Decode, TypeInfo, MaxEncodedLen)]
 #[scale_info(skip_type_params(T))]
 pub struct Nomination<T: Config + pallet::Config> {
-    pub roster: (T::AccountId, RosterTitle<T>),
+    pub roster: RosterId,
     pub nominee: T::AccountId,
     pub nominator: T::AccountId,
     pub nominated_on: BlockNumberFor<T>,
+    pub votes: NominationVotes<T>,
     pub status: NominationStatus,
 }
 
 impl<T: Config + pallet::Config> Nomination<T> {
     pub fn new(
-        roster: (T::AccountId, RosterTitle<T>),
+        roster: RosterId,
         nominee: T::AccountId,
         nominator: T::AccountId
     ) -> Self {
