@@ -3364,7 +3364,7 @@ dependencies = [
  "frame-system",
  "parity-scale-codec",
  "scale-info",
- "sp-arithmetic",
+ "sp-arithmetic 26.0.0",
  "sp-core",
  "sp-npos-elections",
  "sp-runtime",
@@ -3443,7 +3443,7 @@ dependencies = [
  "serde_json",
  "smallvec",
  "sp-api",
- "sp-arithmetic",
+ "sp-arithmetic 26.0.0",
  "sp-core",
  "sp-crypto-hashing-proc-macro",
  "sp-debug-derive",
@@ -6230,7 +6230,7 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "sp-api",
- "sp-arithmetic",
+ "sp-arithmetic 26.0.0",
  "sp-core",
  "sp-io",
  "sp-runtime",
@@ -6484,7 +6484,7 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "sp-api",
- "sp-arithmetic",
+ "sp-arithmetic 26.0.0",
  "sp-core",
  "sp-runtime",
  "sp-std",
@@ -6601,7 +6601,7 @@ dependencies = [
  "parity-scale-codec",
  "rand 0.8.5",
  "scale-info",
- "sp-arithmetic",
+ "sp-arithmetic 26.0.0",
  "sp-core",
  "sp-io",
  "sp-npos-elections",
@@ -6777,7 +6777,7 @@ dependencies = [
  "log",
  "parity-scale-codec",
  "scale-info",
- "sp-arithmetic",
+ "sp-arithmetic 26.0.0",
  "sp-core",
  "sp-io",
  "sp-runtime",
@@ -6832,7 +6832,7 @@ dependencies = [
  "frame-system",
  "parity-scale-codec",
  "scale-info",
- "sp-arithmetic",
+ "sp-arithmetic 26.0.0",
  "sp-core",
  "sp-runtime",
  "sp-std",
@@ -7000,7 +7000,7 @@ dependencies = [
  "log",
  "parity-scale-codec",
  "scale-info",
- "sp-arithmetic",
+ "sp-arithmetic 26.0.0",
  "sp-core",
  "sp-io",
  "sp-runtime",
@@ -7037,7 +7037,7 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
- "sp-arithmetic",
+ "sp-arithmetic 26.0.0",
  "sp-io",
  "sp-runtime",
  "sp-std",
@@ -7069,6 +7069,7 @@ dependencies = [
  "md5",
  "parity-scale-codec",
  "scale-info",
+ "sp-arithmetic 23.0.0",
  "sp-core",
  "sp-io",
  "sp-runtime",
@@ -7149,7 +7150,7 @@ dependencies = [
  "parity-scale-codec",
  "rand_chacha 0.2.2",
  "scale-info",
- "sp-arithmetic",
+ "sp-arithmetic 26.0.0",
  "sp-io",
  "sp-runtime",
  "sp-std",
@@ -7198,7 +7199,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "988a7ebeacc84d4bdb0b12409681e956ffe35438447d8f8bc78db547cffb6ebc"
 dependencies = [
  "log",
- "sp-arithmetic",
+ "sp-arithmetic 26.0.0",
 ]
 
 [[package]]
@@ -8585,7 +8586,7 @@ dependencies = [
  "serde",
  "sp-api",
  "sp-application-crypto",
- "sp-arithmetic",
+ "sp-arithmetic 26.0.0",
  "sp-authority-discovery",
  "sp-consensus-slots",
  "sp-core",
@@ -8733,7 +8734,7 @@ dependencies = [
  "serde",
  "sp-api",
  "sp-application-crypto",
- "sp-arithmetic",
+ "sp-arithmetic 26.0.0",
  "sp-core",
  "sp-inherents",
  "sp-io",
@@ -9871,7 +9872,7 @@ dependencies = [
  "serde_json",
  "smallvec",
  "sp-api",
- "sp-arithmetic",
+ "sp-arithmetic 26.0.0",
  "sp-authority-discovery",
  "sp-block-builder",
  "sp-consensus-babe",
@@ -10406,7 +10407,7 @@ dependencies = [
  "sc-client-api",
  "sc-state-db",
  "schnellru",
- "sp-arithmetic",
+ "sp-arithmetic 26.0.0",
  "sp-blockchain",
  "sp-core",
  "sp-database",
@@ -10554,7 +10555,7 @@ dependencies = [
  "sc-utils",
  "sp-api",
  "sp-application-crypto",
- "sp-arithmetic",
+ "sp-arithmetic 26.0.0",
  "sp-blockchain",
  "sp-consensus",
  "sp-consensus-beefy",
@@ -10636,7 +10637,7 @@ dependencies = [
  "serde_json",
  "sp-api",
  "sp-application-crypto",
- "sp-arithmetic",
+ "sp-arithmetic 26.0.0",
  "sp-blockchain",
  "sp-consensus",
  "sp-consensus-grandpa",
@@ -10683,7 +10684,7 @@ dependencies = [
  "sc-client-api",
  "sc-consensus",
  "sc-telemetry",
- "sp-arithmetic",
+ "sp-arithmetic 26.0.0",
  "sp-blockchain",
  "sp-consensus",
  "sp-consensus-slots",
@@ -10863,7 +10864,7 @@ dependencies = [
  "serde",
  "serde_json",
  "smallvec",
- "sp-arithmetic",
+ "sp-arithmetic 26.0.0",
  "sp-blockchain",
  "sp-core",
  "sp-runtime",
@@ -10965,7 +10966,7 @@ dependencies = [
  "sc-utils",
  "schnellru",
  "smallvec",
- "sp-arithmetic",
+ "sp-arithmetic 26.0.0",
  "sp-blockchain",
  "sp-consensus",
  "sp-consensus-grandpa",
@@ -11420,7 +11421,7 @@ dependencies = [
  "log",
  "parking_lot 0.12.2",
  "prometheus",
- "sp-arithmetic",
+ "sp-arithmetic 26.0.0",
 ]
 
 [[package]]
@@ -12144,6 +12145,21 @@ dependencies = [
 
 [[package]]
 name = "sp-arithmetic"
+version = "23.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f42721f072b421f292a072e8f52a3b3c0fbc27428f0c9fe24067bc47046bad63"
+dependencies = [
+ "integer-sqrt",
+ "num-traits",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-std",
+ "static_assertions",
+]
+
+[[package]]
+name = "sp-arithmetic"
 version = "26.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "46d0d0a4c591c421d3231ddd5e27d828618c24456d51445d21a1f79fcee97c23"
@@ -12545,7 +12561,7 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
- "sp-arithmetic",
+ "sp-arithmetic 26.0.0",
  "sp-core",
  "sp-runtime",
 ]
@@ -12601,7 +12617,7 @@ dependencies = [
  "serde",
  "simple-mermaid",
  "sp-application-crypto",
- "sp-arithmetic",
+ "sp-arithmetic 26.0.0",
  "sp-core",
  "sp-io",
  "sp-std",
@@ -12864,7 +12880,7 @@ dependencies = [
  "scale-info",
  "serde",
  "smallvec",
- "sp-arithmetic",
+ "sp-arithmetic 26.0.0",
  "sp-debug-derive",
 ]
 
@@ -12968,7 +12984,7 @@ dependencies = [
  "parity-scale-codec",
  "polkadot-parachain-primitives",
  "scale-info",
- "sp-arithmetic",
+ "sp-arithmetic 26.0.0",
  "sp-io",
  "sp-runtime",
  "sp-std",
@@ -12990,7 +13006,7 @@ dependencies = [
  "log",
  "parity-scale-codec",
  "scale-info",
- "sp-arithmetic",
+ "sp-arithmetic 26.0.0",
  "sp-core",
  "sp-io",
  "sp-runtime",
@@ -14687,7 +14703,7 @@ dependencies = [
  "smallvec",
  "sp-api",
  "sp-application-crypto",
- "sp-arithmetic",
+ "sp-arithmetic 26.0.0",
  "sp-authority-discovery",
  "sp-block-builder",
  "sp-consensus-babe",

@@ -13,5 +13,11 @@ mod config {
 
         #[pallet::constant]
         type MembersMax: Get<u32>;
+
+        #[pallet::constant]
+        type NominationVotesMax: Get<u32>;
+
+        #[pallet::constant]
+        type NominationVotingPeriod: Get<BlockNumberFor<Self>>;
 	}
 }

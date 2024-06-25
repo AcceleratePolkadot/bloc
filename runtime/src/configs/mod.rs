@@ -1,3 +1,5 @@
+use super::*;
+
 #[path = "xcm.rs"]
 mod xcm_config;
 
@@ -277,6 +279,8 @@ impl pallet_collator_selection::Config for Runtime {
 parameter_types! {
 	pub const TitleMaxLength: u32 = 200;
 	pub const MembersMax: u32 = u32::MAX;
+    pub const NominationVotesMax: u32 = u32::MAX;
+    pub const NominationVotingPeriod: BlockNumber = DAYS * 30;
 }
 
 /// Configure the pallet-roster in pallets/roster.
@@ -284,4 +288,6 @@ impl pallet_roster::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
     type TitleMaxLength = TitleMaxLength;
     type MembersMax = MembersMax;
+    type NominationVotesMax = NominationVotesMax;
+    type NominationVotingPeriod = NominationVotingPeriod;
 }

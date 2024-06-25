@@ -16,9 +16,29 @@ mod errors {
         PermissionDenied,
         /// The nominee is already a member of the roster.
         AlreadyMember,
-        /// The nominee is already nominated for a roster.
+        /// Account is already nominated for a roster.
         AlreadyNominated,
+        /// Account is not nominated for a roster.
+        NotNominated,
+        /// Nomination for that account and roster does not exist.
+        NominationDoesNotExist,
+        /// Nomination has already been approved.
+        NominationAlreadyApproved,
+        /// Nomination has already been rejected.
+        NominationAlreadyRejected,
+        /// Nomination voting period has ended.
+        NominationVotingPeriodEnded,
+        /// Nomination voting period cannot be closed at this time.
+        NominationVotingPeriodHasNotEnded,
+        /// Account has already voted in this nomination.
+        AlreadyVoted,
+        /// Account has not voted in this nomination.
+        NotVoted,
+        /// Could not add vote to nomination votes.
+        CouldNotAddVote,
         /// Could not add member to roster members.
         CouldNotAddMember,
+        /// Error converting between types
+        ConversionError,
     }
 }
