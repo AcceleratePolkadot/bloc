@@ -184,6 +184,8 @@ mod calls {
                 Rosters::<T>::insert(&roster_id, roster);
             }
 
+            ConcludedNominations::<T>::try_append((&nominee, &roster_id)).map_err(|_| Error::<T>::CouldNotAddToConcluded)?;
+
             Self::deposit_event(Event::NominationClosed(nominee, roster_id, who, nomination.status));
 
             Ok(().into())

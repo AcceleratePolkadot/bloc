@@ -59,4 +59,7 @@ pub mod pallet {
         Nomination<T>,
     >;
 
+    #[pallet::storage]
+    pub type ConcludedNominations<T: Config> = StorageValue<_, BoundedVec<(T::AccountId, RosterId), T::ConcludedNominationsMax>, ValueQuery>;
+
 }

@@ -19,5 +19,8 @@ mod config {
 
         #[pallet::constant]
         type NominationVotingPeriod: Get<BlockNumberFor<Self>>;
+
+        #[pallet::constant]
+		type ConcludedNominationsMax: Get<u32>;
 	}
 }

@@ -40,5 +40,7 @@ mod errors {
         CouldNotAddMember,
         /// Error converting between types
         ConversionError,
+        /// Could not add item to the list of concluded/closed items
+        CouldNotAddToConcluded,
     }
 }
