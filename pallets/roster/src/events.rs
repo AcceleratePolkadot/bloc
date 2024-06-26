@@ -2,11 +2,17 @@ use frame_support::pallet_macros::*;
 
 #[pallet_section]
 mod events {
+    use crate::RosterStatus;
+
 	#[pallet::event]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
         /// New roster created [created by, roster title, roster id]
         NewRoster(T::AccountId, RosterTitle<T>, RosterId),
+        /// Roster status has been changed [changed by, roster id, new status]
+        RosterStatusChanged(T::AccountId, RosterId, RosterStatus),
+        /// Roster has been removed [removed by, roster id]
+        RosterRemoved(T::AccountId, RosterId),
         /// New nomination [nominator, nominee, roster id]
         NewNomination(T::AccountId, T::AccountId, RosterId),
         /// Nomination period has ended [nominator, nominee, closed by, nomination status]

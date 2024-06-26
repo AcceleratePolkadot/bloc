@@ -10,6 +10,8 @@ mod errors {
         RosterExists,
         /// Roster does not exist.
         RosterDoesNotExist,
+        /// Roster is active.
+        RosterActive,
         /// Roster is not active.
         RosterNotActive,
         /// THe sender does not have required permissions.
