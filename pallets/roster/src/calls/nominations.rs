@@ -61,7 +61,7 @@ impl<T: Config> NominationCalls<T> {
     pub(crate) fn new(nominator: T::AccountId, roster_id: RosterId, nominee: T::AccountId) -> DispatchResultWithPostInfo {
 
         // Roster must exist and be active.
-        let nomination_roster = Rosters::<T>::get(&roster_id).ok_or(Error::<T>::RosterDoesNotExist)?;
+        let mut nomination_roster = Rosters::<T>::get(&roster_id).ok_or(Error::<T>::RosterDoesNotExist)?;
         ensure!(nomination_roster.status == RosterStatus::Active, Error::<T>::RosterNotActive);
 
         // Nominator must be a member of the roster.
@@ -75,7 +75,10 @@ impl<T: Config> NominationCalls<T> {
 
         // Create new nomination
         let nomination = Nomination::new(&roster_id, &nominee, &nominator);
-        Nominations::<T>::insert(&nominee, &roster_id, nomination);
+        Nominations::<T>::insert(&nominee, &roster_id, &nomination);
+        nomination_roster.nominations.try_push(nominee.clone()).map_err(|_| Error::<T>::CouldNotAddNomination)?;
+        Rosters::<T>::insert(&roster_id, nomination_roster);
+
         pallet::Pallet::deposit_event(Event::<T>::NewNomination(nominator, nominee, roster_id));
 
         Ok(().into())

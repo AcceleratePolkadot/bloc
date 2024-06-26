@@ -38,6 +38,8 @@ mod errors {
         CouldNotAddVote,
         /// Could not add member to roster members.
         CouldNotAddMember,
+        /// Could not add nomination to roster nominations list.
+        CouldNotAddNomination,
         /// Error converting between types
         ConversionError,
         /// Could not add item to the list of concluded/closed items

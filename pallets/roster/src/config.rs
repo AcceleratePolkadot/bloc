@@ -25,6 +25,11 @@ mod config {
         #[pallet::constant]
         type NominationVotingPeriod: Get<BlockNumberFor<Self>>;
 
+        /// Maximum number of nominations that can be in progress per roster
+        /// at any one time
+        #[pallet::constant]
+		type NominationsPerRosterMax: Get<u32>;
+
         /// Maximum number of nominations which can be concluded at the same time
         /// Concluded nominations get removed when a new block is initialized
         /// so this is effectively the number of concluded nominations per block

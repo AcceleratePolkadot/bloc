@@ -282,6 +282,7 @@ parameter_types! {
     pub const NominationVotesMax: u32 = u32::MAX;
     pub const NominationVotingPeriod: BlockNumber = DAYS * 30;
     pub const ConcludedNominationsMax: u32 = u32::MAX;
+    pub const NominationsPerRosterMax: u32 = u32::MAX;
 }
 
 /// Configure the pallet-roster in pallets/roster.
@@ -292,4 +293,5 @@ impl pallet_roster::Config for Runtime {
     type NominationVotesMax = NominationVotesMax;
     type NominationVotingPeriod = NominationVotingPeriod;
     type ConcludedNominationsMax = ConcludedNominationsMax;
+    type NominationsPerRosterMax = NominationsPerRosterMax;
 }

@@ -7,7 +7,16 @@ mod hooks {
 		fn on_initialize(_n: BlockNumberFor<T>) -> Weight {
 			// Remove all nominations which have concluded
 			for concluded_nomination in ConcludedNominations::<T>::take().iter() {
-                Nominations::<T>::remove(&concluded_nomination.0, &concluded_nomination.1);
+				let (nominee, roster_id) = concluded_nomination;
+                Nominations::<T>::remove(&nominee, &roster_id);
+
+				// Remove references to these nominations from the roster
+				let _ = Rosters::<T>::try_mutate(&roster_id, |roster| -> Result<(), ()> {
+					if let Some(roster) = roster {
+						roster.nominations.retain(|n| n != nominee);
+					}
+					Ok(())
+				});
             }
 
 			Weight::zero()

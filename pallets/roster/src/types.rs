@@ -9,6 +9,7 @@ use crate::pallet;
 
 pub type RosterTitle<T> = BoundedVec<u8, <T as pallet::Config>::TitleMaxLength>;
 pub type MembersList<T> = BoundedVec<<T as Config>::AccountId, <T as pallet::Config>::MembersMax>;
+pub type NominationsList<T> = BoundedVec<<T as Config>::AccountId, <T as pallet::Config>::NominationsPerRosterMax>;
 #[derive(Clone, Eq, PartialEq, RuntimeDebug, Encode, Decode, TypeInfo, MaxEncodedLen)]
 pub struct RosterId([u8; 16]);
 
@@ -36,6 +37,7 @@ pub struct Roster<T: Config + pallet::Config> {
     pub founder: T::AccountId,
     pub title: RosterTitle<T>,
     pub members: MembersList<T>,
+    pub nominations: NominationsList<T>,
     pub founded_on: BlockNumberFor<T>,
     pub status: RosterStatus,
 }
@@ -50,6 +52,7 @@ impl<T: Config + pallet::Config> Roster<T> {
             founder: founder.clone(),
             title: title.clone(),
             members: BoundedVec::default(),
+            nominations:  BoundedVec::default(),
             founded_on: <system::Pallet<T>>::block_number(),
             status: RosterStatus::Active,
         }
