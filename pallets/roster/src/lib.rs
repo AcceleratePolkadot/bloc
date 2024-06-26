@@ -40,7 +40,9 @@ pub mod pallet {
     #[pallet::pallet]
     pub struct Pallet<T>(_);
 
-    // Keys are the founder's account id and the roster's title, so titles must be unique per founder.
+    /// A map of all Rosters
+    /// The `RosterId` is a v8 UUID generated from the md5 hash of the founder AccountId and the Roster title
+    /// See `RosterId::from_tuple()` for more details on how this key is generated
     #[pallet::storage]
     pub type Rosters<T: Config> = StorageMap<
         _,
@@ -49,6 +51,10 @@ pub mod pallet {
         Roster<T>,
     >;
 
+    /// Open roster membership nominations
+    /// Concluded nominations (approved or rejected) are removed from storage on block initialization
+    ///
+    /// Storage keys are the nominee's accountId and the id of the roster they are being nominated for
     #[pallet::storage]
     pub type Nominations<T: Config> = StorageDoubleMap<
         _,
@@ -59,6 +65,12 @@ pub mod pallet {
         Nomination<T>,
     >;
 
+    /// List of concluded nominations
+    ///
+    /// When a nomination is closed it is added to this list. This saves us from having to iterate over
+    /// all nominations during block initialization to find those which are no longer `NominationStatus::Pending`
+    ///
+    /// This storage value is taken and removed during each block initialization
     #[pallet::storage]
     pub type ConcludedNominations<T: Config> = StorageValue<_, BoundedVec<(T::AccountId, RosterId), T::ConcludedNominationsMax>, ValueQuery>;
 
