@@ -17,7 +17,7 @@ mod calls {
 		/// - `title`: A vector of bytes representing the string title of the roster (must be smaller than `TitleMaxLength`)
 		///
 		/// Emits `NewRoster`
-        #[pallet::call_index(0)]
+        #[pallet::call_index(100)]
         #[pallet::weight(Weight::from_parts(10_000, 0) + T::DbWeight::get().writes(1))]
         pub fn new_roster(origin: OriginFor<T>, title: Vec<u8>) -> DispatchResultWithPostInfo {
             let founder = ensure_signed(origin)?;
@@ -45,7 +45,7 @@ mod calls {
         /// - `nominee`: AccountId of the account being nominated
 		///
 		/// Emits `NewNomination`
-        #[pallet::call_index(10)]
+        #[pallet::call_index(200)]
         #[pallet::weight(Weight::from_parts(10_000, 0) + T::DbWeight::get().writes(1))]
         pub fn nomination_new(origin: OriginFor<T>, roster_id: RosterId, nominee: T::AccountId) -> DispatchResultWithPostInfo {
             let nominator = ensure_signed(origin)?;
@@ -62,7 +62,7 @@ mod calls {
         /// - `vote`: The `NominationVoteValue` (Aye or Nay)
 		///
 		/// Emits `Voted`
-        #[pallet::call_index(20)]
+        #[pallet::call_index(210)]
         #[pallet::weight(Weight::from_parts(10_000, 0) + T::DbWeight::get().writes(1))]
         pub fn nomination_vote(origin: OriginFor<T>, roster_id: RosterId, nominee: T::AccountId, vote: NominationVoteValue) -> DispatchResultWithPostInfo {
             let voter = ensure_signed(origin)?;
@@ -78,7 +78,7 @@ mod calls {
         /// - `nominee`: AccountId of the account being nominated
 		///
 		/// Emits `VoteRecanted`
-        #[pallet::call_index(30)]
+        #[pallet::call_index(220)]
         #[pallet::weight(Weight::from_parts(10_000, 0) + T::DbWeight::get().writes(1))]
         pub fn nomination_vote_recant(origin: OriginFor<T>, roster_id: RosterId, nominee: T::AccountId) -> DispatchResultWithPostInfo {
             let voter = ensure_signed(origin)?;
@@ -97,7 +97,7 @@ mod calls {
         /// - `nominee`: AccountId of the account being nominated
 		///
 		/// Emits `NominationClosed`
-        #[pallet::call_index(40)]
+        #[pallet::call_index(230)]
         #[pallet::weight(Weight::from_parts(10_000, 0) + T::DbWeight::get().writes(1))]
         pub fn nomination_close(origin: OriginFor<T>, roster_id: RosterId, nominee: T::AccountId) -> DispatchResultWithPostInfo {
             let who = ensure_signed(origin)?;
