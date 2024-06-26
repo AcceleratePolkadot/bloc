@@ -15,11 +15,9 @@ pub struct RosterId([u8; 16]);
 
 impl RosterId {
     pub fn from_tuple<T: Config + pallet::Config>((founder, title): (&T::AccountId, &RosterTitle<T>)) -> Self {
-        let mut bytes = founder.encode();
-        bytes.extend(title);
-        let digest = md5::compute(bytes);
-        
-        RosterId(*Uuid::new_v8(digest.into()).as_bytes())
+        let namespace = Uuid::from_bytes(md5::compute(founder.encode()).0);
+        let roster_uuid = Uuid::new_v3(&namespace, title);
+        RosterId(*roster_uuid.as_bytes())
     }
 
 }

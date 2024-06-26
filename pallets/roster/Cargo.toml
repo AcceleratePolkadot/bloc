@@ -13,7 +13,7 @@ targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
 md5 = { version = "0.7.0", default-features = false }
-uuid = { version = "1.8.0", default-features = false, features = ["v8"] }
+uuid = { version = "1.8.0", default-features = false, features = ["v3"] }
 codec.workspace = true
 scale-info.workspace = true
 
