@@ -130,15 +130,24 @@ impl<T: Config> NominationCalls<T> {
         let mut nomination = Nominations::<T>::get(&nominee, &roster_id).ok_or(Error::<T>::NominationDoesNotExist)?;
         Self::in_voting_period(&nomination)?;
 
-        // Voting can end if the voting period has passed
-        // or if the ayes or nays have exceeded the voting threshold
+        // Voting can end if:
+        // - the voting period has passed ||
+        // - the ayes or nays have exceeded the voting threshold ||
+        // - all members have voted
         let mut roster = Rosters::<T>::get(&roster_id).ok_or(Error::<T>::RosterDoesNotExist)?;
         let ayes = nomination.votes.iter().filter(|v| v.vote == NominationVoteValue::Aye).count() as u32;
         let nays = nomination.votes.iter().filter(|v| v.vote == NominationVoteValue::Nay).count() as u32;
         let votes_threshold = Self::calculate_votes_threshold(&roster, &nomination)?;
 
-        ensure!(nomination.nominated_on + T::NominationVotingPeriod::get() < <frame_system::Pallet<T>>::block_number() || ayes >= votes_threshold || nays >= votes_threshold,  Error::<T>::NominationVotingPeriodHasNotEnded);
+        ensure!(
+            nomination.nominated_on + T::NominationVotingPeriod::get() < <frame_system::Pallet<T>>::block_number() ||
+            ayes >= votes_threshold ||
+            nays >= votes_threshold ||
+            nomination.votes.len() >= roster.members.len(),
+            Error::<T>::NominationVotingPeriodHasNotEnded
+        );
 
+        // If Ayes == Nays we default to existing roster state which is nominee is not a member
         nomination.status = match ayes > nays {
             true => NominationStatus::Approved,
             false => NominationStatus::Rejected,
