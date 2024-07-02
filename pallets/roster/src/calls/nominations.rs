@@ -12,7 +12,7 @@ impl<T: Config> NominationCalls<T> {
     fn in_voting_period(nomination: &Nomination<T>) -> Result<bool, pallet::Error<T>> {
         ensure!(nomination.status !=  NominationStatus::Approved, Error::<T>::NominationAlreadyApproved);
         ensure!(nomination.status !=  NominationStatus::Rejected, Error::<T>::NominationAlreadyRejected);
-        ensure!(nomination.nominated_on + T::NominationVotingPeriod::get() >= <frame_system::Pallet<T>>::block_number(), Error::<T>::NominationVotingPeriodEnded);
+        ensure!(nomination.nominated_on + T::NominationVotingPeriod::get() >= <frame_system::Pallet<T>>::block_number(), Error::<T>::VotingPeriodEnded);
         Ok(true)
     }
 
@@ -99,7 +99,7 @@ impl<T: Config> NominationCalls<T> {
         ensure!(!nomination.votes.iter().any(|v| v.voter == voter), Error::<T>::AlreadyVoted);
 
         // Add vote to nomination
-        let nomination_vote = NominationVote { voter: voter.clone(), vote: vote.clone() };
+        let nomination_vote = NominationVote::new(&voter, &vote);
         nomination.votes.try_push(nomination_vote).map_err(|_| Error::<T>::CouldNotAddVote)?;
         Nominations::<T>::insert(&nominee, &roster_id, nomination);
         
@@ -144,7 +144,7 @@ impl<T: Config> NominationCalls<T> {
             ayes >= votes_threshold ||
             nays >= votes_threshold ||
             nomination.votes.len() >= roster.members.len(),
-            Error::<T>::NominationVotingPeriodHasNotEnded
+            Error::<T>::VotingPeriodHasNotEnded
         );
 
         // If Ayes == Nays we default to existing roster state which is nominee is not a member

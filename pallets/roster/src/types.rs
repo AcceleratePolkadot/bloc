@@ -10,6 +10,10 @@ use crate::pallet;
 pub type RosterTitle<T> = BoundedVec<u8, <T as pallet::Config>::TitleMaxLength>;
 pub type MembersList<T> = BoundedVec<<T as Config>::AccountId, <T as pallet::Config>::MembersMax>;
 pub type NominationsList<T> = BoundedVec<<T as Config>::AccountId, <T as pallet::Config>::NominationsPerRosterMax>;
+pub type ExpulsionProposalsList<T> = BoundedVec<(<T as Config>::AccountId, <T as Config>::AccountId), <T as pallet::Config>::ExpulsionProposalsPerRosterMax>;
+pub type SecondsList<T> = BoundedVec<<T as Config>::AccountId, <T as pallet::Config>::SecondsMax>;
+pub type ExpulsionReason<T> = BoundedVec<u8, <T as pallet::Config>::ExpulsionReasonMaxLength>;
+
 #[derive(Clone, Eq, PartialEq, RuntimeDebug, Encode, Decode, TypeInfo, MaxEncodedLen)]
 pub struct RosterId([u8; 16]);
 
@@ -36,6 +40,7 @@ pub struct Roster<T: Config + pallet::Config> {
     pub title: RosterTitle<T>,
     pub members: MembersList<T>,
     pub nominations: NominationsList<T>,
+    pub expulsion_proposals: ExpulsionProposalsList<T>,
     pub founded_on: BlockNumberFor<T>,
     pub status: RosterStatus,
 }
@@ -51,6 +56,7 @@ impl<T: Config + pallet::Config> Roster<T> {
             title: title.clone(),
             members: BoundedVec::default(),
             nominations:  BoundedVec::default(),
+            expulsion_proposals: BoundedVec::default(),
             founded_on: <system::Pallet<T>>::block_number(),
             status: RosterStatus::Active,
         }
@@ -97,6 +103,20 @@ impl<T: Config + pallet::Config> Nomination<T> {
 pub struct NominationVote<T: Config> {
     pub voter: T::AccountId,
     pub vote: NominationVoteValue,
+    pub voted_on: BlockNumberFor<T>,
+}
+
+impl<T: Config + pallet::Config> NominationVote<T> {
+    pub fn new(
+        voter: &T::AccountId,
+        vote: &NominationVoteValue
+    ) -> Self {
+        Self {
+            voter: voter.clone(),
+            vote: vote.clone(),
+            voted_on: <system::Pallet<T>>::block_number(),
+        }
+    }
 }
 
 pub type NominationVotes<T> = BoundedVec<NominationVote<T>, <T as pallet::Config>::NominationVotesMax>;
@@ -106,4 +126,84 @@ pub type NominationVotes<T> = BoundedVec<NominationVote<T>, <T as pallet::Config
 pub enum NominationVoteValue {
     Aye,
     Nay,
+}
+
+
+#[derive(Clone, Eq, PartialEq, RuntimeDebug, Encode, Decode, TypeInfo, MaxEncodedLen)]
+pub enum ExpulsionProposalStatus {
+    Proposed,
+    Seconded,
+    Voting,
+    Passed,
+    Dismissed,
+    DismissedWithPrejudice,
+}
+
+#[derive(Clone, Eq, PartialEq, RuntimeDebug, Encode, Decode, TypeInfo, MaxEncodedLen)]
+#[scale_info(skip_type_params(T))]
+pub struct ExpulsionProposal<T: Config + pallet::Config> {
+    pub motioner: T::AccountId,
+    pub seconds: SecondsList<T>,
+    pub subject: T::AccountId,
+    pub roster: RosterId,
+    pub reason: ExpulsionReason<T>,
+    pub proposed_on: BlockNumberFor<T>,
+    pub voting_opened_on: Option<BlockNumberFor<T>>,
+    pub decided_on: Option<BlockNumberFor<T>>,
+    pub votes: ExpulsionProposalVotes<T>,
+    pub status: ExpulsionProposalStatus,
+}
+
+impl<T: Config + pallet::Config> ExpulsionProposal<T> {
+    pub fn new(
+        motioner: &T::AccountId,
+        subject: &T::AccountId,
+        roster: &RosterId,
+        reason: &ExpulsionReason<T>,
+    ) -> Self {
+        Self {
+            motioner: motioner.clone(),
+            seconds:  BoundedVec::default(),
+            subject: subject.clone(),
+            roster: roster.clone(),
+            reason: reason.clone(),
+            proposed_on: <system::Pallet<T>>::block_number(),
+            voting_opened_on: None,
+            decided_on: None,
+            votes: BoundedVec::default(),
+            status: ExpulsionProposalStatus::Proposed,
+        }
+    }
+}
+
+
+#[derive(Clone, Eq, PartialEq, RuntimeDebug, Encode, Decode, TypeInfo, MaxEncodedLen)]
+#[scale_info(skip_type_params(T))]
+pub struct ExpulsionProposalVote<T: Config> {
+    pub voter: T::AccountId,
+    pub vote: ExpulsionProposalVoteValue,
+    pub voted_on: BlockNumberFor<T>,
+}
+
+impl<T: Config + pallet::Config> ExpulsionProposalVote<T> {
+    pub fn new(
+        voter: &T::AccountId,
+        vote: &ExpulsionProposalVoteValue
+    ) -> Self {
+        Self {
+            voter: voter.clone(),
+            vote: vote.clone(),
+            voted_on: <system::Pallet<T>>::block_number(),
+        }
+    }
+}
+
+pub type ExpulsionProposalVotes<T> = BoundedVec<ExpulsionProposalVote<T>, <T as pallet::Config>::ExpulsionProposalVotesMax>;
+
+
+#[derive(Clone, Eq, PartialEq, RuntimeDebug, Encode, Decode, TypeInfo, MaxEncodedLen)]
+pub enum ExpulsionProposalVoteValue {
+    Aye,
+    Nay,
+    Abstain,
 }

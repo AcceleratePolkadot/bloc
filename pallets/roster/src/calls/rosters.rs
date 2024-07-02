@@ -51,7 +51,7 @@ impl<T: Config> RosterCalls<T> {
         Self::update_roster_status(&founder, &roster_id, RosterStatus::Inactive)?;
         pallet::Pallet::deposit_event(Event::<T>::RosterStatusChanged(founder.clone(), roster_id.clone(), RosterStatus::Inactive));
 
-        // When a roster is deactivated all active nominations are rejected
+        // All active nominations are rejected
         let roster = Rosters::<T>::get(&roster_id).ok_or(Error::<T>::RosterDoesNotExist)?;
         for nominee in roster.nominations.iter() {
             Nominations::<T>::try_mutate(&nominee, &roster_id, |nomination| -> DispatchResult {
@@ -60,6 +60,15 @@ impl<T: Config> RosterCalls<T> {
             })?;
             ConcludedNominations::<T>::try_append((&nominee, &roster_id)).map_err(|_| Error::<T>::CouldNotAddToConcluded)?;
             pallet::Pallet::deposit_event(Event::<T>::NominationClosed(nominee.clone(), roster_id.clone(), founder.clone(),  NominationStatus::Rejected));
+        }
+
+        // All active expulsion proposals are dismissed
+        for (motioner, subject) in roster.expulsion_proposals.iter() {
+            ExpulsionProposals::<T>::try_mutate((&roster_id, &motioner, &subject), |ep| -> DispatchResult {
+                ep.as_mut().ok_or(Error::<T>::ExpulsionProposalDoesNotExist)?.status = ExpulsionProposalStatus::Dismissed;
+                Ok(())
+            })?;
+            pallet::Pallet::deposit_event(Event::<T>::ExpulsionProposalDismissed(founder.clone(), motioner.clone(), subject.clone(), roster_id.clone()));
         }
 
         Ok(().into())
@@ -73,6 +82,10 @@ impl<T: Config> RosterCalls<T> {
 
         ensure!(roster.founder == founder, Error::<T>::PermissionDenied);
         ensure!(roster.status == RosterStatus::Inactive, Error::<T>::RosterActive);
+
+        // Remove all expulsion proposals from storage
+        let ep_clear_results = ExpulsionProposals::<T>::clear_prefix((&roster_id,), T::ExpulsionProposalsPerRosterMax::get(), None);
+        ensure!(ep_clear_results.maybe_cursor == None, Error::<T>::CouldNotRemoveAllExpulsionProposals);
 
         pallet::Pallet::deposit_event(Event::<T>::RosterRemoved(founder, roster_id));
 

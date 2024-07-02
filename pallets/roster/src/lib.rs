@@ -74,4 +74,21 @@ pub mod pallet {
     #[pallet::storage]
     pub type ConcludedNominations<T: Config> = StorageValue<_, BoundedVec<(T::AccountId, RosterId), T::ConcludedNominationsMax>, ValueQuery>;
 
+    /// Expulsion proposals
+    ///
+    /// Storage keys are:
+    ///  - the id of the roster the proposal is to expel the subject from
+    ///  - the motioner's accountId
+    ///  - the subject's accountId
+    #[pallet::storage]
+    pub type ExpulsionProposals<T: Config> = StorageNMap<
+        _,
+       (
+        NMapKey<Blake2_128Concat, RosterId>,
+        NMapKey<Blake2_128Concat, T::AccountId>,
+        NMapKey<Blake2_128Concat, T::AccountId>,
+       ),
+       ExpulsionProposal<T>,
+    >;
+
 }

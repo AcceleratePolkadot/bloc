@@ -4,6 +4,20 @@ use frame_support::pallet_macros::*;
 mod errors {
     #[pallet::error]
     pub enum Error<T> {
+        /// Voting period has not started yet
+        VotingPeriodHasNotStarted,
+        /// Voting period has ended.
+        VotingPeriodEnded,
+        /// Voting period cannot be closed at this time.
+        VotingPeriodHasNotEnded,
+        /// Voting period has ended
+        VotingPeriodHasEnded,
+        /// Account has already voted
+        AlreadyVoted,
+        /// Account has not voted
+        NotVoted,
+        /// Could not add vote
+        CouldNotAddVote,
         /// The roster title is invalid.
         InvalidRosterTitle,
         /// A roster with the same title already exists for this account.
@@ -16,7 +30,7 @@ mod errors {
         RosterNotActive,
         /// THe sender does not have required permissions.
         PermissionDenied,
-        /// The nominee is already a member of the roster.
+        /// The account is already a member of the roster.
         AlreadyMember,
         /// Account is already nominated for a roster.
         AlreadyNominated,
@@ -28,16 +42,6 @@ mod errors {
         NominationAlreadyApproved,
         /// Nomination has already been rejected.
         NominationAlreadyRejected,
-        /// Nomination voting period has ended.
-        NominationVotingPeriodEnded,
-        /// Nomination voting period cannot be closed at this time.
-        NominationVotingPeriodHasNotEnded,
-        /// Account has already voted in this nomination.
-        AlreadyVoted,
-        /// Account has not voted in this nomination.
-        NotVoted,
-        /// Could not add vote to nomination votes.
-        CouldNotAddVote,
         /// Could not add member to roster members.
         CouldNotAddMember,
         /// Could not add nomination to roster nominations list.
@@ -46,5 +50,17 @@ mod errors {
         ConversionError,
         /// Could not add item to the list of concluded/closed items
         CouldNotAddToConcluded,
+        /// The expulsion reason is invalid (probably a length issue)
+        InvalidExpulsionReason,
+        /// Expulsion proposal does not exist for that key
+        ExpulsionProposalDoesNotExist,
+        /// Could not add expulsion proposal to roster expulsion proposals list
+        CouldNotAddExpulsionProposal,
+        /// Could not add seconder to expulsion proposal
+        CouldNotAddSeconder,
+        /// Not enough seconds supporting the expulsion proposal
+        InsufficientSeconds,
+        /// Could not remove all expulsion proposals from storage
+        CouldNotRemoveAllExpulsionProposals,
     }
 }

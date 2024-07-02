@@ -21,5 +21,25 @@ mod events {
         Voted(T::AccountId, NominationVoteValue, T::AccountId, RosterId),
         /// Vote recanted [voter, nominee, roster id]
         VoteRecanted(T::AccountId, T::AccountId, RosterId),
+        /// New member added to roster [member, roster id]
+        MemberAdded(T::AccountId, RosterId),
+        /// Member removed from roster [member, roster id]
+        MemberRemoved(T::AccountId, RosterId),
+        /// New expulsion proposal [motioner, subject, roster id, reason]
+        NewExpulsionProposal(T::AccountId, T::AccountId, RosterId, ExpulsionReason<T>),
+        /// Expulsion Proposal has been seconded [seconder, motioner, subject, roster id, number of seconds]
+        SeconderAddedToExpulsionProposal(T::AccountId, T::AccountId, T::AccountId, RosterId, u32),
+        /// Expulsion proposal opened for voting [motioner, subject, roster id]
+        ExpulsionVoteOpened(T::AccountId, T::AccountId, RosterId),
+        /// Vote added to expulsion proposal [voter, motioner, subject, roster id, vote value]
+        ExpulsionVoteSubmitted(T::AccountId, T::AccountId, T::AccountId, RosterId, ExpulsionProposalVoteValue),
+        /// Vote added to expulsion proposal [voter, motioner, subject, roster id]
+        ExpulsionVoteRecanted(T::AccountId, T::AccountId, T::AccountId, RosterId),
+        /// Expulsion proposal has been dismissed with prejudice [closer, motioner, subject, roster id]
+        ExpulsionProposalDismissedWithPrejudice(T::AccountId, T::AccountId, T::AccountId, RosterId),
+        /// Expulsion proposal has been dismissed [closer, motioner, subject, roster id]
+        ExpulsionProposalDismissed(T::AccountId, T::AccountId, T::AccountId, RosterId),
+        /// Expulsion proposal has passed [closer, motioner, subject, roster id]
+        ExpulsionProposalPassed(T::AccountId, T::AccountId, T::AccountId, RosterId),
     }
 }

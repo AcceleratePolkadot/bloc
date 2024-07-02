@@ -2,11 +2,12 @@ use frame_support::pallet_macros::*;
 
 pub mod rosters;
 pub mod nominations;
+pub mod expulsions;
 
 #[pallet_section]
 mod calls {
     use sp_std::vec::Vec;
-    use crate::calls::{nominations::NominationCalls, rosters::RosterCalls};
+    use crate::calls::{nominations::NominationCalls, rosters::RosterCalls, expulsions::ExpulsionCalls};
 
     #[pallet::call]
     impl<T: Config> Pallet<T> {
@@ -51,6 +52,7 @@ mod calls {
 		///
 		/// Emits `RosterStatusChanged`
         /// Emits `NominationClosed`
+        /// Emits `ExpulsionProposalDismissed`
         #[pallet::call_index(12)]
         #[pallet::weight(Weight::from_parts(10_000, 0) + T::DbWeight::get().writes(1))]
         pub fn roster_deactivate(origin: OriginFor<T>,  roster_id: RosterId) -> DispatchResultWithPostInfo {
@@ -119,7 +121,7 @@ mod calls {
 		/// Emits `VoteRecanted`
         #[pallet::call_index(32)]
         #[pallet::weight(Weight::from_parts(10_000, 0) + T::DbWeight::get().writes(1))]
-        pub fn nomination_vote_recant(origin: OriginFor<T>, roster_id: RosterId, nominee: T::AccountId) -> DispatchResultWithPostInfo {
+        pub fn nomination_recant_vote(origin: OriginFor<T>, roster_id: RosterId, nominee: T::AccountId) -> DispatchResultWithPostInfo {
             let voter = ensure_signed(origin)?;
             NominationCalls::<T>::recant_vote(voter, roster_id, nominee)
         }
@@ -141,6 +143,117 @@ mod calls {
         pub fn nomination_close(origin: OriginFor<T>, roster_id: RosterId, nominee: T::AccountId) -> DispatchResultWithPostInfo {
             let who = ensure_signed(origin)?;
             NominationCalls::<T>::close(who, roster_id, nominee)
+        }
+
+        /// Submit an expulsion proposal
+		///
+		/// The dispatch origin of this call must be _Signed_
+        /// The origin account will be the motioner and may be subject to punishment if the proposal is unsuccessful
+		///
+		/// - `subject`: AccountId of the member facing expulsion
+        /// - `roster_id`: The UUID of the roster the subject could be expelled from
+        /// - `reason`: A vector of bytes of the string describing the reason the subject should be expelled (must be smaller than `ExpulsionReasonMaxLength`)
+		///
+		/// Emits `NewExpulsionProposal`
+        #[pallet::call_index(50)]
+        #[pallet::weight(Weight::from_parts(10_000, 0) + T::DbWeight::get().writes(1))]
+        pub fn expulsion_proposal_new(origin: OriginFor<T>, subject: T::AccountId, roster_id: RosterId, reason: Vec<u8>) -> DispatchResultWithPostInfo {
+            let motioner = ensure_signed(origin)?;
+            ExpulsionCalls::<T>::new(motioner, subject, roster_id, reason)
+        }
+
+        /// Second an expulsion proposal
+		///
+		/// The dispatch origin of this call must be _Signed_
+        /// The origin account will be added as a seconder to the motioner's expulsion vote
+        /// Seconders may be subject to punishment if the vote is unsuccessful
+		///
+        /// - `motioner`: AccountId of the member who started the expulsion vote
+		/// - `subject`: AccountId of the member facing expulsion
+        /// - `roster_id`: The UUID of the roster the subject could be expelled from
+		///
+		/// Emits `SeconderAddedToExpulsionProposal`
+        #[pallet::call_index(51)]
+        #[pallet::weight(Weight::from_parts(10_000, 0) + T::DbWeight::get().writes(1))]
+        pub fn expulsion_proposal_second(origin: OriginFor<T>, motioner: T::AccountId, subject: T::AccountId, roster_id: RosterId) -> DispatchResultWithPostInfo {
+            let seconder = ensure_signed(origin)?;
+            ExpulsionCalls::<T>::second(seconder, motioner, subject, roster_id)
+        }
+
+        /// Open an expulsion vote
+		///
+		/// The dispatch origin of this call must be _Signed_
+        /// The origin account must be the moitioner of the expulsion vote
+        /// 
+        /// A proposal can only be moved to the Voting stage if the number of seconders is greater than or equal to the `ExpulsionProposalSecondThreshold`
+		///
+		/// - `subject`: AccountId of the member facing expulsion
+        /// - `roster_id`: The UUID of the roster the subject could be expelled from
+		///
+		/// Emits `ExpulsionVoteOpened`
+        #[pallet::call_index(52)]
+        #[pallet::weight(Weight::from_parts(10_000, 0) + T::DbWeight::get().writes(1))]
+        pub fn expulsion_vote_open(origin: OriginFor<T>, subject: T::AccountId, roster_id: RosterId) -> DispatchResultWithPostInfo {
+            let motioner = ensure_signed(origin)?;
+            ExpulsionCalls::<T>::open(motioner, subject, roster_id)
+        }
+
+        /// Vote on an expulsion vote
+		///
+		/// The dispatch origin of this call must be _Signed_
+        /// The origin account will be recorded as the voter, they cannot have voted on this proposal before
+        /// 
+        /// Vote values cannot be changed via this extrinsic, to change a vote first recant it and then vote again
+		///
+        /// - `motioner`: AccountId of the member who started the expulsion vote
+		/// - `subject`: AccountId of the member facing expulsion
+        /// - `roster_id`: The UUID of the roster the subject could be expelled from
+        /// - `vote`: The `ExpulsionProposalVoteValue` (Aye, Nay, or Abstain)
+		///
+		/// Emits `ExpulsionVoteSubmitted`
+        #[pallet::call_index(53)]
+        #[pallet::weight(Weight::from_parts(10_000, 0) + T::DbWeight::get().writes(1))]
+        pub fn expulsion_vote_submit_vote(origin: OriginFor<T>, motioner: T::AccountId, subject: T::AccountId, roster_id: RosterId, vote: ExpulsionProposalVoteValue) -> DispatchResultWithPostInfo {
+            let voter = ensure_signed(origin)?;
+            ExpulsionCalls::<T>::vote(voter, motioner, subject, roster_id, vote)
+        }
+
+        /// Recant vote on an expulsion vote
+		///
+		/// The dispatch origin of this call must be _Signed_
+        /// The origin account must be the voter of the vote they wish to recant
+        /// 
+        /// - `motioner`: AccountId of the member who started the expulsion vote
+		/// - `subject`: AccountId of the member facing expulsion
+        /// - `roster_id`: The UUID of the roster the subject could be expelled from
+		///
+		/// Emits `ExpulsionVoteRecanted`
+        #[pallet::call_index(54)]
+        #[pallet::weight(Weight::from_parts(10_000, 0) + T::DbWeight::get().writes(1))]
+        pub fn expulsion_vote_recant_vote(origin: OriginFor<T>, motioner: T::AccountId, subject: T::AccountId, roster_id: RosterId) -> DispatchResultWithPostInfo {
+            let voter = ensure_signed(origin)?;
+            ExpulsionCalls::<T>::recant_vote(voter, motioner, subject, roster_id)
+        }
+
+        /// Close an expulsion proposal
+		///
+		/// The dispatch origin of this call must be _Signed_
+        /// The origin will be the closer of the proposal, and can be any member of the roster
+        /// 
+        /// If conditions are met the proposal may be dismissed with prejudice
+        /// 
+        /// - `motioner`: AccountId of the member who started the expulsion vote
+		/// - `subject`: AccountId of the member facing expulsion
+        /// - `roster_id`: The UUID of the roster the subject could be expelled from
+		///
+		/// Emits `ExpulsionProposalPassed`
+        /// Emits `ExpulsionProposalDismissed`
+        /// Emits `ExpulsionProposalDismissedWithPrejudice`
+        #[pallet::call_index(55)]
+        #[pallet::weight(Weight::from_parts(10_000, 0) + T::DbWeight::get().writes(1))]
+        pub fn expulsion_proposal_close(origin: OriginFor<T>, motioner: T::AccountId, subject: T::AccountId, roster_id: RosterId) -> DispatchResultWithPostInfo {
+            let closer = ensure_signed(origin)?;
+            ExpulsionCalls::<T>::close(closer, motioner, subject, roster_id)
         }
     }
 }

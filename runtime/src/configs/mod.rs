@@ -280,9 +280,21 @@ parameter_types! {
 	pub const TitleMaxLength: u32 = 200;
 	pub const MembersMax: u32 = u32::MAX;
     pub const NominationVotesMax: u32 = u32::MAX;
-    pub const NominationVotingPeriod: BlockNumber = DAYS * 30;
+    pub const NominationVotingPeriod: BlockNumber = DAYS * 90;
     pub const ConcludedNominationsMax: u32 = u32::MAX;
     pub const NominationsPerRosterMax: u32 = u32::MAX;
+    pub const ExpulsionProposalAwaitingSecondPeriod: BlockNumber = DAYS * 5;
+    pub const ExpulsionProposalVotingPeriod: BlockNumber = DAYS * 30;
+    pub const ExpulsionProposalsPerRosterMax: u32 = u32::MAX;
+    pub const ExpulsionProposalSecondThreshold: u32 = 1;
+    pub const SecondsMax: u32 = u32::MAX;
+    pub const ExpulsionReasonMaxLength: u32 = 5000;
+    pub const ExpulsionReasonMinLength: u32 = 200;
+    pub const ExpulsionProposalVotesMax: u32 = u32::MAX;
+    pub const ExpulsionProposalLockoutPeriod: BlockNumber = DAYS * 180;
+    pub const ExpulsionProposalSuperMajority: u32 = 75;
+    pub const ExpulsionProposalQuorum: u32 = 50;
+
 }
 
 /// Configure the pallet-roster in pallets/roster.
@@ -294,4 +306,15 @@ impl pallet_roster::Config for Runtime {
     type NominationVotingPeriod = NominationVotingPeriod;
     type ConcludedNominationsMax = ConcludedNominationsMax;
     type NominationsPerRosterMax = NominationsPerRosterMax;
+    type ExpulsionProposalAwaitingSecondPeriod = ExpulsionProposalAwaitingSecondPeriod;
+    type ExpulsionProposalVotingPeriod = ExpulsionProposalVotingPeriod;
+    type ExpulsionProposalsPerRosterMax = ExpulsionProposalsPerRosterMax;
+    type ExpulsionProposalSecondThreshold = ExpulsionProposalSecondThreshold;
+    type SecondsMax = SecondsMax;
+    type ExpulsionReasonMaxLength = ExpulsionReasonMaxLength;
+    type ExpulsionReasonMinLength = ExpulsionReasonMinLength;
+    type ExpulsionProposalVotesMax = ExpulsionProposalVotesMax;
+    type ExpulsionProposalLockoutPeriod = ExpulsionProposalLockoutPeriod;
+    type ExpulsionProposalSuperMajority = ExpulsionProposalSuperMajority;
+    type ExpulsionProposalQuorum = ExpulsionProposalQuorum;
 }
