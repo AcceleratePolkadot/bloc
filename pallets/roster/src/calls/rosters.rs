@@ -37,19 +37,31 @@ impl<T: Config> RosterCalls<T> {
         roster.members.try_push(founder.clone()).map_err(|_| Error::<T>::CouldNotAddMember)?;
         Rosters::<T>::insert(&roster_id, roster);
 
-        pallet::Pallet::deposit_event(Event::<T>::NewRoster(founder,  bounded_title, roster_id));
+        pallet::Pallet::deposit_event(Event::<T>::NewRoster {
+            founder,
+            title: bounded_title,
+            roster_id
+        });
         Ok(().into())
     }
 
     pub(crate) fn activate(founder: T::AccountId,  roster_id: RosterId) -> DispatchResultWithPostInfo {
         Self::update_roster_status(&founder, &roster_id, RosterStatus::Active)?;
-        pallet::Pallet::deposit_event(Event::<T>::RosterStatusChanged(founder, roster_id, RosterStatus::Active));
+        pallet::Pallet::deposit_event(Event::<T>::RosterStatusChanged {
+            changed_by: founder,
+            roster_id,
+            new_status: RosterStatus::Active
+        });
         Ok(().into())
     }
 
     pub(crate) fn deactivate(founder: T::AccountId,  roster_id: RosterId) -> DispatchResultWithPostInfo {
         Self::update_roster_status(&founder, &roster_id, RosterStatus::Inactive)?;
-        pallet::Pallet::deposit_event(Event::<T>::RosterStatusChanged(founder.clone(), roster_id.clone(), RosterStatus::Inactive));
+        pallet::Pallet::deposit_event(Event::<T>::RosterStatusChanged {
+            changed_by: founder.clone(),
+            roster_id: roster_id.clone(),
+            new_status: RosterStatus::Inactive
+        });
 
         // All active nominations are rejected
         let roster = Rosters::<T>::get(&roster_id).ok_or(Error::<T>::RosterDoesNotExist)?;
@@ -58,8 +70,14 @@ impl<T: Config> RosterCalls<T> {
                 nomination.as_mut().ok_or(Error::<T>::NominationDoesNotExist)?.status = NominationStatus::Rejected;
                 Ok(())
             })?;
+
             ConcludedNominations::<T>::try_append((&nominee, &roster_id)).map_err(|_| Error::<T>::CouldNotAddToConcluded)?;
-            pallet::Pallet::deposit_event(Event::<T>::NominationClosed(nominee.clone(), roster_id.clone(), founder.clone(),  NominationStatus::Rejected));
+            pallet::Pallet::deposit_event(Event::<T>::NominationClosed {
+                nominee: nominee.clone(),
+                closed_by: founder.clone(),
+                roster_id: roster_id.clone(),
+                status: NominationStatus::Rejected
+            });
         }
 
         // All active expulsion proposals are dismissed
@@ -68,7 +86,12 @@ impl<T: Config> RosterCalls<T> {
                 ep.as_mut().ok_or(Error::<T>::ExpulsionProposalDoesNotExist)?.status = ExpulsionProposalStatus::Dismissed;
                 Ok(())
             })?;
-            pallet::Pallet::deposit_event(Event::<T>::ExpulsionProposalDismissed(founder.clone(), motioner.clone(), subject.clone(), roster_id.clone()));
+            pallet::Pallet::deposit_event(Event::<T>::ExpulsionProposalDismissed {
+                closer: founder.clone(),
+                motioner: motioner.clone(),
+                subject: subject.clone(),
+                roster_id: roster_id.clone()
+            });
         }
 
         Ok(().into())
@@ -87,7 +110,10 @@ impl<T: Config> RosterCalls<T> {
         let ep_clear_results = ExpulsionProposals::<T>::clear_prefix((&roster_id,), T::ExpulsionProposalsPerRosterMax::get(), None);
         ensure!(ep_clear_results.maybe_cursor == None, Error::<T>::CouldNotRemoveAllExpulsionProposals);
 
-        pallet::Pallet::deposit_event(Event::<T>::RosterRemoved(founder, roster_id));
+        pallet::Pallet::deposit_event(Event::<T>::RosterRemoved {
+            removed_by: founder,
+            roster_id
+        });
 
         Ok(().into())
 

@@ -79,7 +79,11 @@ impl<T: Config> NominationCalls<T> {
         nomination_roster.nominations.try_push(nominee.clone()).map_err(|_| Error::<T>::CouldNotAddNomination)?;
         Rosters::<T>::insert(&roster_id, nomination_roster);
 
-        pallet::Pallet::deposit_event(Event::<T>::NewNomination(nominator, nominee, roster_id));
+        pallet::Pallet::deposit_event(Event::<T>::NewNomination {
+            nominator,
+            nominee,
+            roster_id
+        });
 
         Ok(().into())
     }
@@ -103,7 +107,12 @@ impl<T: Config> NominationCalls<T> {
         nomination.votes.try_push(nomination_vote).map_err(|_| Error::<T>::CouldNotAddVote)?;
         Nominations::<T>::insert(&nominee, &roster_id, nomination);
         
-        pallet::Pallet::deposit_event(Event::<T>::Voted(voter, vote, nominee, roster_id));
+        pallet::Pallet::deposit_event(Event::<T>::Voted {
+            voter,
+            vote,
+            nominee,
+            roster_id
+        });
 
         Ok(().into())
     }
@@ -120,7 +129,11 @@ impl<T: Config> NominationCalls<T> {
         nomination.votes.retain(|v| v.voter != voter);
         Nominations::<T>::insert(&nominee, &roster_id, nomination);
 
-        pallet::Pallet::deposit_event(Event::<T>::VoteRecanted(voter, nominee, roster_id));
+        pallet::Pallet::deposit_event(Event::<T>::VoteRecanted {
+            voter,
+            nominee,
+            roster_id
+        });
 
         Ok(().into())
     }
@@ -159,11 +172,21 @@ impl<T: Config> NominationCalls<T> {
         if nomination.status == NominationStatus::Approved {
             roster.members.try_push(nominee.clone()).map_err(|_| Error::<T>::CouldNotAddMember)?;
             Rosters::<T>::insert(&roster_id, roster);
+
+            pallet::Pallet::deposit_event(Event::<T>::MemberAdded {
+                member: nominee.clone(),
+                roster_id: roster_id.clone()
+            });
         }
 
         ConcludedNominations::<T>::try_append((&nominee, &roster_id)).map_err(|_| Error::<T>::CouldNotAddToConcluded)?;
 
-        pallet::Pallet::deposit_event(Event::<T>::NominationClosed(nominee, roster_id, who, nomination.status));
+        pallet::Pallet::deposit_event(Event::<T>::NominationClosed {
+            nominee,
+            closed_by: who,
+            roster_id,
+            status: nomination.status
+        });
 
         Ok(().into())
                     

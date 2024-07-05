@@ -100,7 +100,12 @@ impl<T: Config> ExpulsionCalls<T> {
         roster.expulsion_proposals.try_push((motioner.clone(), subject.clone())).map_err(|_| Error::<T>::CouldNotAddExpulsionProposal)?;
         Rosters::<T>::insert(&roster_id, roster);
 
-        pallet::Pallet::deposit_event(Event::<T>::NewExpulsionProposal(motioner, subject, roster_id, bounded_reason));
+        pallet::Pallet::deposit_event(Event::<T>::NewExpulsionProposal {
+            motioner,
+            subject,
+            roster_id,
+            reason: bounded_reason
+        });
 
         Ok(().into())
     }
@@ -117,7 +122,13 @@ impl<T: Config> ExpulsionCalls<T> {
         expulsion_proposal.status = ExpulsionProposalStatus::Seconded;
         ExpulsionProposals::<T>::insert((&roster_id, &motioner, &subject), &expulsion_proposal);
 
-        pallet::Pallet::deposit_event(Event::<T>::SeconderAddedToExpulsionProposal(seconder, motioner, subject, roster_id, expulsion_proposal.seconds.len() as u32));
+        pallet::Pallet::deposit_event(Event::<T>::SeconderAddedToExpulsionProposal {
+            seconder,
+            motioner,
+            subject,
+            roster_id,
+            seconds_count: expulsion_proposal.seconds.len() as u32
+        });
 
         Ok(().into())
     }
@@ -134,7 +145,11 @@ impl<T: Config> ExpulsionCalls<T> {
         expulsion_proposal.voting_opened_on = Some(<frame_system::Pallet<T>>::block_number());
         ExpulsionProposals::<T>::insert((&roster_id, &motioner, &subject), &expulsion_proposal);
 
-        pallet::Pallet::deposit_event(Event::<T>::ExpulsionVoteOpened(motioner, subject, roster_id));
+        pallet::Pallet::deposit_event(Event::<T>::ExpulsionVoteOpened {
+            motioner,
+            subject,
+            roster_id
+        });
 
         Ok(().into())
     }
@@ -160,7 +175,13 @@ impl<T: Config> ExpulsionCalls<T> {
         expulsion_proposal.votes.try_push(voting_record).map_err(|_| Error::<T>::CouldNotAddVote)?;
         ExpulsionProposals::<T>::insert((&roster_id, &motioner, &subject), &expulsion_proposal);
 
-        pallet::Pallet::deposit_event(Event::<T>::ExpulsionVoteSubmitted(voter, motioner, subject, roster_id, vote));
+        pallet::Pallet::deposit_event(Event::<T>::ExpulsionVoteSubmitted {
+            voter,
+            motioner,
+            subject,
+            roster_id,
+            vote
+        });
 
         Ok(().into())
     }
@@ -179,7 +200,12 @@ impl<T: Config> ExpulsionCalls<T> {
             }
         })?;
 
-        pallet::Pallet::deposit_event(Event::<T>::ExpulsionVoteRecanted(voter, motioner, subject, roster_id));
+        pallet::Pallet::deposit_event(Event::<T>::ExpulsionVoteRecanted {
+            voter,
+            motioner,
+            subject,
+            roster_id
+        });
 
         Ok(().into())
     }
@@ -198,7 +224,12 @@ impl<T: Config> ExpulsionCalls<T> {
             expulsion_proposal.decided_on = Some(<frame_system::Pallet<T>>::block_number());
             ExpulsionProposals::<T>::insert((&roster_id, &motioner, &subject), &expulsion_proposal);
             Self::remove_proposal_from_roster(&roster, &motioner, &subject);
-            pallet::Pallet::deposit_event(Event::<T>::ExpulsionProposalDismissedWithPrejudice(closer, motioner, subject, roster_id));
+            pallet::Pallet::deposit_event(Event::<T>::ExpulsionProposalDismissedWithPrejudice {
+                closer,
+                motioner,
+                subject,
+                roster_id
+            });
         } else {
             let voting_opened_on = expulsion_proposal.voting_opened_on.unwrap_or(<frame_system::Pallet<T>>::block_number());
             ensure!(voting_opened_on + T::ExpulsionProposalVotingPeriod::get() < <frame_system::Pallet<T>>::block_number(), Error::<T>::VotingPeriodHasNotEnded);
@@ -216,19 +247,32 @@ impl<T: Config> ExpulsionCalls<T> {
                 expulsion_proposal.decided_on = Some(<frame_system::Pallet<T>>::block_number());
                 ExpulsionProposals::<T>::insert((&roster_id, &motioner, &subject), &expulsion_proposal);
                 Self::remove_proposal_from_roster(&roster, &motioner, &subject);
-                pallet::Pallet::deposit_event(Event::<T>::ExpulsionProposalDismissed(closer, motioner, subject, roster_id));
+                pallet::Pallet::deposit_event(Event::<T>::ExpulsionProposalDismissed {
+                    closer,
+                    motioner,
+                    subject,
+                    roster_id
+                });
             } else {
                 // Proposal has passed
                 expulsion_proposal.status = ExpulsionProposalStatus::Passed;
                 expulsion_proposal.decided_on = Some(<frame_system::Pallet<T>>::block_number());
                 ExpulsionProposals::<T>::insert((&roster_id, &motioner, &subject), &expulsion_proposal);
                 Self::remove_proposal_from_roster(&roster, &motioner, &subject);
-                pallet::Pallet::deposit_event(Event::<T>::ExpulsionProposalPassed(closer, motioner, subject.clone(), roster_id.clone()));
+                pallet::Pallet::deposit_event(Event::<T>::ExpulsionProposalPassed {
+                    closer,
+                    motioner,
+                    subject: subject.clone(),
+                    roster_id: roster_id.clone()
+                });
 
                 // Proposal passed, kick subject from roster
                 roster.members.retain(|m| m != &subject);
                 Rosters::<T>::insert(&roster_id, roster);
-                pallet::Pallet::deposit_event(Event::<T>::MemberRemoved(subject, roster_id));
+                pallet::Pallet::deposit_event(Event::<T>::MemberRemoved {
+                    member: subject,
+                    roster_id
+                });
             }
         }
 
