@@ -4,8 +4,10 @@ use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::{sp_runtime::RuntimeDebug, BoundedVec};
 use frame_system::{self as system, pallet_prelude::BlockNumberFor, Config};
 use scale_info::TypeInfo;
+use sp_std::vec::Vec;
 
 use crate::pallet;
+
 
 pub type RosterTitle<T> = BoundedVec<u8, <T as pallet::Config>::TitleMaxLength>;
 pub type MembersList<T> = BoundedVec<<T as Config>::AccountId, <T as pallet::Config>::MembersMax>;
@@ -24,6 +26,11 @@ impl RosterId {
         RosterId(*roster_uuid.as_bytes())
     }
 
+    pub fn from_tuple_with_unbounded_title<T: Config>((founder, title): (&T::AccountId, &Vec<u8>)) -> Self {
+        let namespace = Uuid::from_bytes(md5::compute(founder.encode()).0);
+        let roster_uuid = Uuid::new_v3(&namespace, &title);
+        RosterId(*roster_uuid.as_bytes())
+    }
 }
 
 #[derive(Clone, Eq, PartialEq, RuntimeDebug, Encode, Decode, TypeInfo, MaxEncodedLen)]
@@ -34,7 +41,7 @@ pub enum RosterStatus {
 
 #[derive(Clone, Eq, PartialEq, RuntimeDebug, Encode, Decode, TypeInfo, MaxEncodedLen)]
 #[scale_info(skip_type_params(T))]
-pub struct Roster<T: Config + pallet::Config> {
+pub struct Roster<T: pallet::Config> {
     pub id: RosterId,
     pub founder: T::AccountId,
     pub title: RosterTitle<T>,
@@ -45,7 +52,7 @@ pub struct Roster<T: Config + pallet::Config> {
     pub status: RosterStatus,
 }
 
-impl<T: Config + pallet::Config> Roster<T> {
+impl<T: pallet::Config> Roster<T> {
     pub fn new(
         founder: &T::AccountId,
         title: &RosterTitle<T>,
@@ -106,7 +113,7 @@ pub struct NominationVote<T: Config> {
     pub voted_on: BlockNumberFor<T>,
 }
 
-impl<T: Config + pallet::Config> NominationVote<T> {
+impl<T: Config> NominationVote<T> {
     pub fn new(
         voter: &T::AccountId,
         vote: &NominationVoteValue
