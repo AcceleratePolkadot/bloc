@@ -28,10 +28,10 @@ mod tests;
 
 // Every callable function or "dispatchable" a pallet exposes must have weight values that correctly
 // estimate a dispatchable's execution time. The benchmarking module is used to calculate weights
-// for each dispatchable and generates this pallet's weight.rs file. Learn more about benchmarking here: https://docs.substrate.io/test/benchmark/
+// for each dispatchable and generates this pallet's weight.rs file.
+// Learn more about benchmarking here: https://docs.substrate.io/test/benchmark/
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
-
 
 #[import_section(hooks::hooks)]
 #[import_section(events::events)]
@@ -40,62 +40,62 @@ mod benchmarking;
 #[import_section(calls::calls)]
 #[frame_support::pallet]
 pub mod pallet {
-    use super::*;
-    use frame_support::{dispatch::DispatchResultWithPostInfo, pallet_prelude::*};
-    use frame_system::pallet_prelude::*;
+	use super::*;
+	use frame_support::{dispatch::DispatchResultWithPostInfo, pallet_prelude::*};
+	use frame_system::pallet_prelude::*;
 
-    #[pallet::pallet]
-    pub struct Pallet<T>(_);
+	#[pallet::pallet]
+	pub struct Pallet<T>(_);
 
-    /// A map of all Rosters
-    /// The `RosterId` is a v8 UUID generated from the md5 hash of the founder AccountId and the Roster title
-    /// See `RosterId::from_tuple()` for more details on how this key is generated
-    #[pallet::storage]
-    pub type Rosters<T: Config> = StorageMap<
-        _,
-        Blake2_128Concat,
-        RosterId,
-        Roster<T>,
-    >;
+	/// A map of all Rosters
+	/// The `RosterId` is a v8 UUID generated from the md5 hash of the founder AccountId and the
+	/// Roster title See `RosterId::from_tuple()` for more details on how this key is generated
+	#[pallet::storage]
+	pub type Rosters<T: Config> = StorageMap<_, Blake2_128Concat, RosterId, Roster<T>>;
 
-    /// Open roster membership nominations
-    /// Concluded nominations (approved or rejected) are removed from storage on block initialization
-    ///
-    /// Storage keys are the nominee's accountId and the id of the roster they are being nominated for
-    #[pallet::storage]
-    pub type Nominations<T: Config> = StorageDoubleMap<
-        _,
-        Blake2_128Concat,
-        T::AccountId,
-        Blake2_128Concat,
-        RosterId,
-        Nomination<T>,
-    >;
+	/// Open roster membership nominations
+	/// Concluded nominations (approved or rejected) are removed from storage on block
+	/// initialization
+	///
+	/// Storage keys are the nominee's AccountId and the RosterId they are being nominated to
+	#[pallet::storage]
+	pub type Nominations<T: Config> = StorageDoubleMap<
+		_,
+		Blake2_128Concat,
+		T::AccountId,
+		Blake2_128Concat,
+		RosterId,
+		Nomination<T>,
+	>;
 
-    /// List of concluded nominations
-    ///
-    /// When a nomination is closed it is added to this list. This saves us from having to iterate over
-    /// all nominations during block initialization to find those which are no longer `NominationStatus::Pending`
-    ///
-    /// This storage value is taken and removed during each block initialization
-    #[pallet::storage]
-    pub type ConcludedNominations<T: Config> = StorageValue<_, BoundedVec<(T::AccountId, RosterId), T::ConcludedNominationsMax>, ValueQuery>;
+	/// List of concluded nominations
+	///
+	/// When a nomination is closed it is added to this list. This saves us from having to iterate
+	/// over all nominations during block initialization to find those which are no longer
+	/// `NominationStatus::Pending`
+	///
+	/// This storage value is taken and removed during each block initialization
+	#[pallet::storage]
+	pub type ConcludedNominations<T: Config> = StorageValue<
+		_,
+		BoundedVec<(T::AccountId, RosterId), T::ConcludedNominationsMax>,
+		ValueQuery,
+	>;
 
-    /// Expulsion proposals
-    ///
-    /// Storage keys are:
-    ///  - the id of the roster the proposal is to expel the subject from
-    ///  - the motioner's accountId
-    ///  - the subject's accountId
-    #[pallet::storage]
-    pub type ExpulsionProposals<T: Config> = StorageNMap<
-        _,
-       (
-        NMapKey<Blake2_128Concat, RosterId>,
-        NMapKey<Blake2_128Concat, T::AccountId>,
-        NMapKey<Blake2_128Concat, T::AccountId>,
-       ),
-       ExpulsionProposal<T>,
-    >;
-
+	/// Expulsion proposals
+	///
+	/// Storage keys are:
+	///  - the id of the roster the proposal is to expel the subject from
+	///  - the motioner's accountId
+	///  - the subject's accountId
+	#[pallet::storage]
+	pub type ExpulsionProposals<T: Config> = StorageNMap<
+		_,
+		(
+			NMapKey<Blake2_128Concat, RosterId>,
+			NMapKey<Blake2_128Concat, T::AccountId>,
+			NMapKey<Blake2_128Concat, T::AccountId>,
+		),
+		ExpulsionProposal<T>,
+	>;
 }

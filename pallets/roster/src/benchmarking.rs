@@ -13,13 +13,16 @@ mod benchmarks {
 
 	#[benchmark]
 	fn roster_new() {
-        let caller = whitelisted_caller();
-        let roster_id = types::RosterId::from_tuple_with_unbounded_title::<T>((&caller, &"My Roster".as_bytes().to_vec()));
+		let caller = whitelisted_caller();
+		let roster_id = types::RosterId::from_tuple_with_unbounded_title::<T>((
+			&caller,
+			&"My Roster".as_bytes().to_vec(),
+		));
 
 		#[extrinsic_call]
 		roster_new(RawOrigin::Signed(caller.clone()), "My Roster".as_bytes().to_vec());
 
-        let roster = Rosters::<T>::get(&roster_id);
+		let roster = Rosters::<T>::get(&roster_id);
 
 		assert!(roster.is_some());
 		assert_eq!(roster.unwrap().founder, caller)

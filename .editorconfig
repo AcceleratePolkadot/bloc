@@ -1,0 +1,26 @@
+# EditorConfig: https://editorconfig.org
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = tab
+indent_size = 4
+max_line_length = 100
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.py]
+indent_style = space
+indent_size = 4
+
+# Matches taplo.tamasfe.dev
+[*.toml]
+indent_style = space
+indent_size = 2
+
+# It's recommended to use spaces for YAML files
+[*.{yaml,yml}]
+indent_style = space
+indent_size = 2
