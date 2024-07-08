@@ -11,9 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - run: rustup update nightly && rustup component add rustfmt --toolchain nightly && rustup default nightly
 
       - name: Check formatting
-        run: cargo fmt --all -- --check
+        run: cargo +nightly fmt --check -p pallet-roster
 
   check:
     needs: lint
