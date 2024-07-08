@@ -9,4 +9,5 @@ frame_benchmarking::define_benchmarks!(
     [pallet_session, SessionBench::<Runtime>]
     [cumulus_pallet_xcmp_queue, XcmpQueue]
     [pallet_message_queue, MessageQueue]
+    [pallet_roster, Roster]
 );
