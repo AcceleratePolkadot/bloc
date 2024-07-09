@@ -5,8 +5,15 @@ mod config {
 
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
+		/// Pallet ID, root account for fungible assets
+		#[pallet::constant]
+		type PalletId: Get<PalletId>;
+
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
+
+		/// Trait for handling fungible tokens
+		type Currency: Currency<Self::AccountId> + ReservableCurrency<Self::AccountId>;
 
 		/// Maximum length of the Roster title byte array
 		#[pallet::constant]

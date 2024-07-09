@@ -5,7 +5,8 @@
 /// <https://docs.substrate.io/build/custom-pallets/>
 pub use pallet::*;
 
-use frame_support::pallet_macros::*;
+use frame_support::{pallet_macros::*, traits::Get};
+use sp_runtime::traits::AccountIdConversion;
 
 mod calls;
 mod config;
@@ -41,7 +42,12 @@ mod benchmarking;
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use frame_support::{dispatch::DispatchResultWithPostInfo, pallet_prelude::*};
+	use frame_support::{
+		dispatch::DispatchResultWithPostInfo,
+		pallet_prelude::*,
+		traits::{Currency, ReservableCurrency},
+		PalletId,
+	};
 	use frame_system::pallet_prelude::*;
 
 	#[pallet::pallet]
@@ -98,4 +104,14 @@ pub mod pallet {
 		),
 		ExpulsionProposal<T>,
 	>;
+}
+
+impl<T: Config> Pallet<T> {
+	/// The account ID of the treasury pot.
+	///
+	/// This actually does computation. If you need to keep using it, then make sure you cache the
+	/// value and only call this once.
+	pub fn account_id() -> T::AccountId {
+		T::PalletId::get().into_account_truncating()
+	}
 }

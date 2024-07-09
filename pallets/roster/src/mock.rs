@@ -2,6 +2,7 @@ use frame_support::{
 	derive_impl, parameter_types,
 	traits::{Everything, OnFinalize, OnInitialize},
 	weights::Weight,
+	PalletId,
 };
 use frame_system as system;
 use sp_core::H256;
@@ -18,9 +19,15 @@ frame_support::construct_runtime!(
 	pub enum Test
 	{
 		System: frame_system::{Pallet, Call, Config<T>, Storage, Event<T>},
+		Balances: pallet_balances,
 		Roster: crate::{Pallet, Call, Storage, Event<T>},
 	}
 );
+
+#[derive_impl(pallet_balances::config_preludes::TestDefaultConfig)]
+impl pallet_balances::Config for Test {
+	type AccountStore = System;
+}
 
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;
@@ -45,7 +52,7 @@ impl system::Config for Test {
 	type BlockHashCount = BlockHashCount;
 	type Version = ();
 	type PalletInfo = PalletInfo;
-	type AccountData = ();
+	type AccountData = pallet_balances::AccountData<u64>;
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
 	type SystemWeightInfo = ();
@@ -76,6 +83,7 @@ impl frame_support::migrations::MultiStepMigrator for MockedMigrator {
 }
 
 parameter_types! {
+	pub const RosterPalletId: PalletId = PalletId(*b"py/rster");
 	pub const TitleMaxLength: u32 = 200;
 	pub const MembersMax: u32 = u32::MAX;
 	pub const NominationVotesMax: u32 = u32::MAX;
@@ -96,7 +104,9 @@ parameter_types! {
 }
 
 impl crate::Config for Test {
+	type PalletId = RosterPalletId;
 	type RuntimeEvent = RuntimeEvent;
+	type Currency = Balances;
 	type TitleMaxLength = TitleMaxLength;
 	type MembersMax = MembersMax;
 	type NominationVotesMax = NominationVotesMax;

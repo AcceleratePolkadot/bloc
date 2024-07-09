@@ -277,6 +277,7 @@ impl pallet_collator_selection::Config for Runtime {
 }
 
 parameter_types! {
+	pub const RosterPalletId: PalletId = PalletId(*b"py/rster");
 	pub const TitleMaxLength: u32 = 200;
 	pub const MembersMax: u32 = u32::MAX;
 	pub const NominationVotesMax: u32 = u32::MAX;
@@ -299,7 +300,9 @@ parameter_types! {
 
 /// Configure the pallet-roster in pallets/roster.
 impl pallet_roster::Config for Runtime {
+	type PalletId = RosterPalletId;
 	type RuntimeEvent = RuntimeEvent;
+	type Currency = Balances;
 	type TitleMaxLength = TitleMaxLength;
 	type MembersMax = MembersMax;
 	type NominationVotesMax = NominationVotesMax;

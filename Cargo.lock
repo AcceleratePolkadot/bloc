@@ -7077,6 +7077,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "md5",
+ "pallet-balances",
  "parity-scale-codec",
  "scale-info",
  "sp-arithmetic 23.0.0",
