@@ -294,6 +294,8 @@ impl<T: Config> NominationCalls<T> {
 		Rosters::<T>::try_mutate(&roster_id, |roster| -> DispatchResult {
 			if let Some(roster) = roster {
 				ensure!(roster.members.contains(&member), Error::<T>::PermissionDenied);
+				// Founder cannot be removed from roster
+				ensure!(roster.founder != member.clone(), Error::<T>::PermissionDenied);
 				roster.members.retain(|m| m != &member);
 
 				T::Currency::unreserve_named(
