@@ -1,5 +1,8 @@
 use crate::*;
-use frame_support::pallet_prelude::*;
+use frame_support::{
+	pallet_prelude::*,
+	traits::{BalanceStatus, NamedReservableCurrency},
+};
 use sp_runtime::Percent;
 use sp_std::vec::Vec;
 
@@ -23,10 +26,10 @@ impl<T: Config> ExpulsionCalls<T> {
 		// ago they are in the lockout period
 		!ExpulsionProposals::<T>::iter_prefix_values((&roster_id,)).any(|proposal| {
 			if let Some(decided_on) = proposal.decided_on {
-				return (proposal.seconds.contains(account) || proposal.motioner == *account) &&
-					proposal.status == ExpulsionProposalStatus::DismissedWithPrejudice &&
-					decided_on + T::ExpulsionProposalLockoutPeriod::get() >=
-						<frame_system::Pallet<T>>::block_number();
+				return (proposal.seconds.contains(account) || proposal.motioner == *account)
+					&& proposal.status == ExpulsionProposalStatus::DismissedWithPrejudice
+					&& decided_on + T::ExpulsionProposalLockoutPeriod::get()
+						>= <frame_system::Pallet<T>>::block_number();
 			}
 			false
 		})
@@ -49,11 +52,11 @@ impl<T: Config> ExpulsionCalls<T> {
 		// with prejudice
 		ensure!(
 			!ExpulsionProposals::<T>::iter_prefix((&roster.id, &motioner)).any(|(_, proposal)| {
-				(proposal.status == ExpulsionProposalStatus::Proposed ||
-					proposal.status == ExpulsionProposalStatus::Seconded ||
-					proposal.status == ExpulsionProposalStatus::Voting) ||
-					(proposal.subject == *subject &&
-						proposal.status == ExpulsionProposalStatus::DismissedWithPrejudice)
+				(proposal.status == ExpulsionProposalStatus::Proposed
+					|| proposal.status == ExpulsionProposalStatus::Seconded
+					|| proposal.status == ExpulsionProposalStatus::Voting)
+					|| (proposal.subject == *subject
+						&& proposal.status == ExpulsionProposalStatus::DismissedWithPrejudice)
 			}),
 			Error::<T>::PermissionDenied
 		);
@@ -75,8 +78,8 @@ impl<T: Config> ExpulsionCalls<T> {
 		ensure!(roster.members.contains(&seconder), Error::<T>::PermissionDenied);
 		// Expulsion proposal must be in Proposed or Seconded state
 		ensure!(
-			expulsion_proposal.status == ExpulsionProposalStatus::Proposed ||
-				expulsion_proposal.status == ExpulsionProposalStatus::Seconded,
+			expulsion_proposal.status == ExpulsionProposalStatus::Proposed
+				|| expulsion_proposal.status == ExpulsionProposalStatus::Seconded,
 			Error::<T>::PermissionDenied
 		);
 		// Seconder must not be in lockout period
@@ -92,9 +95,9 @@ impl<T: Config> ExpulsionCalls<T> {
 		// If the proposal has not reached the second threshold, and the
 		// `ExpulsionProposalAwaitingSecondPeriod` has passed it can be dismissed with prejudice
 		let seconds_count = expulsion_proposal.seconds.len() as u32;
-		if seconds_count < T::ExpulsionProposalSecondThreshold::get() &&
-			expulsion_proposal.proposed_on + T::ExpulsionProposalAwaitingSecondPeriod::get() <
-				<frame_system::Pallet<T>>::block_number()
+		if seconds_count < T::ExpulsionProposalSecondThreshold::get()
+			&& expulsion_proposal.proposed_on + T::ExpulsionProposalAwaitingSecondPeriod::get()
+				< <frame_system::Pallet<T>>::block_number()
 		{
 			return true;
 		} else {
@@ -111,9 +114,9 @@ impl<T: Config> ExpulsionCalls<T> {
 			let nays_threshold = Percent::from_percent(
 				T::ExpulsionProposalSuperMajority::get().try_into().unwrap_or(100),
 			) * roster.members.len() as u32;
-			voting_opened_on + T::ExpulsionProposalVotingPeriod::get() <
-				<frame_system::Pallet<T>>::block_number() &&
-				nays >= nays_threshold
+			voting_opened_on + T::ExpulsionProposalVotingPeriod::get()
+				< <frame_system::Pallet<T>>::block_number()
+				&& nays >= nays_threshold
 		}
 	}
 
@@ -260,8 +263,8 @@ impl<T: Config> ExpulsionCalls<T> {
 			.voting_opened_on
 			.ok_or(Error::<T>::VotingPeriodHasNotStarted)?;
 		ensure!(
-			voting_opened_on + T::ExpulsionProposalVotingPeriod::get() >=
-				<frame_system::Pallet<T>>::block_number(),
+			voting_opened_on + T::ExpulsionProposalVotingPeriod::get()
+				>= <frame_system::Pallet<T>>::block_number(),
 			Error::<T>::VotingPeriodHasEnded
 		);
 
@@ -357,15 +360,15 @@ impl<T: Config> ExpulsionCalls<T> {
 				.voting_opened_on
 				.unwrap_or(<frame_system::Pallet<T>>::block_number());
 			ensure!(
-				voting_opened_on + T::ExpulsionProposalVotingPeriod::get() <
-					<frame_system::Pallet<T>>::block_number(),
+				voting_opened_on + T::ExpulsionProposalVotingPeriod::get()
+					< <frame_system::Pallet<T>>::block_number(),
 				Error::<T>::VotingPeriodHasNotEnded
 			);
 
 			let total_votes = expulsion_proposal.votes.len() as u32;
-			let votes_needed_for_quorum = Percent::from_percent(
-				T::ExpulsionProposalQuorum::get().try_into().unwrap_or(100),
-			) * roster.members.len() as u32;
+			let votes_needed_for_quorum =
+				Percent::from_percent(T::ExpulsionProposalQuorum::get().try_into().unwrap_or(100))
+					* roster.members.len() as u32;
 
 			let ayes = expulsion_proposal
 				.votes
@@ -414,9 +417,24 @@ impl<T: Config> ExpulsionCalls<T> {
 				roster.members.retain(|m| m != &subject);
 				Rosters::<T>::insert(&roster_id, roster);
 				pallet::Pallet::deposit_event(Event::<T>::MemberRemoved {
-					member: subject,
-					roster_id,
+					member: subject.clone(),
+					roster_id: roster_id.clone(),
 				});
+
+				// Slash their membership dues
+				let pot = pallet::Pallet::<T>::account_id();
+				let balance_status = BalanceStatus::Free;
+				let repatriation_result = T::Currency::repatriate_reserved_named(
+					&pallet::Pallet::<T>::reserved_currency_name(
+						types::ReservedCurrencyReason::MembershipDues(roster_id),
+					),
+					&subject,
+					&pot,
+					T::MembershipDues::get(),
+					balance_status,
+				);
+
+				ensure!(repatriation_result.is_ok(), Error::<T>::CouldNotSlash);
 			}
 		}
 

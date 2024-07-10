@@ -6,6 +6,8 @@ mod errors {
 	pub enum Error<T> {
 		/// Account does not have enough funds available to perform the operation.
 		InsufficientFunds,
+		/// Could not slash funds.
+		CouldNotSlash,
 		/// Voting period has not started yet
 		VotingPeriodHasNotStarted,
 		/// Voting period has ended.
