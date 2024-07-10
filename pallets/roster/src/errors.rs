@@ -4,6 +4,8 @@ use frame_support::pallet_macros::*;
 mod errors {
 	#[pallet::error]
 	pub enum Error<T> {
+		/// Account does not have enough funds available to perform the operation.
+		InsufficientFunds,
 		/// Voting period has not started yet
 		VotingPeriodHasNotStarted,
 		/// Voting period has ended.

@@ -45,13 +45,16 @@ pub mod pallet {
 	use frame_support::{
 		dispatch::DispatchResultWithPostInfo,
 		pallet_prelude::*,
-		traits::{Currency, ReservableCurrency},
+		traits::{Currency, NamedReservableCurrency},
 		PalletId,
 	};
 	use frame_system::pallet_prelude::*;
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
+
+	type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
+	type BalanceOf<T> = <<T as Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
 
 	/// A map of all Rosters
 	/// The `RosterId` is a v8 UUID generated from the md5 hash of the founder AccountId and the
@@ -113,5 +116,14 @@ impl<T: Config> Pallet<T> {
 	/// value and only call this once.
 	pub fn account_id() -> T::AccountId {
 		T::PalletId::get().into_account_truncating()
+	}
+
+	pub fn new_roster_reserve_name(roster_id: &RosterId) -> [u8; 24] {
+		let mut pallet_id = T::PalletId::get().0.to_vec();
+		pallet_id.extend(roster_id.clone().0.to_vec());
+		match pallet_id.try_into() {
+			Ok(pallet_id) => pallet_id,
+			Err(_) => [0u8; 24],
+		}
 	}
 }

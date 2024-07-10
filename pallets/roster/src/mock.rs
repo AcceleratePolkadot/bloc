@@ -27,6 +27,7 @@ frame_support::construct_runtime!(
 #[derive_impl(pallet_balances::config_preludes::TestDefaultConfig)]
 impl pallet_balances::Config for Test {
 	type AccountStore = System;
+	type ReserveIdentifier = [u8; 24];
 }
 
 parameter_types! {
@@ -84,6 +85,7 @@ impl frame_support::migrations::MultiStepMigrator for MockedMigrator {
 
 parameter_types! {
 	pub const RosterPalletId: PalletId = PalletId(*b"py/rster");
+	pub const NewRosterDeposit: u64 = 1;
 	pub const TitleMaxLength: u32 = 200;
 	pub const MembersMax: u32 = u32::MAX;
 	pub const NominationVotesMax: u32 = u32::MAX;
@@ -107,6 +109,7 @@ impl crate::Config for Test {
 	type PalletId = RosterPalletId;
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
+	type NewRosterDeposit = NewRosterDeposit;
 	type TitleMaxLength = TitleMaxLength;
 	type MembersMax = MembersMax;
 	type NominationVotesMax = NominationVotesMax;

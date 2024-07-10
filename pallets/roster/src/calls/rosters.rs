@@ -1,5 +1,6 @@
 use crate::*;
 use frame_support::pallet_prelude::*;
+use frame_support::traits::NamedReservableCurrency;
 use sp_std::vec::Vec;
 
 pub struct RosterCalls<T> {
@@ -45,6 +46,13 @@ impl<T: Config> RosterCalls<T> {
 			.try_push(founder.clone())
 			.map_err(|_| Error::<T>::CouldNotAddMember)?;
 		Rosters::<T>::insert(&roster_id, roster);
+
+		T::Currency::reserve_named(
+			&pallet::Pallet::<T>::new_roster_reserve_name(&roster_id),
+			&founder,
+			T::NewRosterDeposit::get(),
+		)
+		.map_err(|_| Error::<T>::InsufficientFunds)?;
 
 		pallet::Pallet::deposit_event(Event::<T>::NewRoster {
 			founder,
@@ -135,6 +143,12 @@ impl<T: Config> RosterCalls<T> {
 		ensure!(
 			ep_clear_results.maybe_cursor == None,
 			Error::<T>::CouldNotRemoveAllExpulsionProposals
+		);
+
+		T::Currency::unreserve_named(
+			&pallet::Pallet::<T>::new_roster_reserve_name(&roster_id),
+			&founder,
+			T::NewRosterDeposit::get(),
 		);
 
 		pallet::Pallet::deposit_event(Event::<T>::RosterRemoved { removed_by: founder, roster_id });

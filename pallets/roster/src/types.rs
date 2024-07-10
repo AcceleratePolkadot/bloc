@@ -20,7 +20,7 @@ pub type SecondsList<T> = BoundedVec<<T as Config>::AccountId, <T as pallet::Con
 pub type ExpulsionReason<T> = BoundedVec<u8, <T as pallet::Config>::ExpulsionReasonMaxLength>;
 
 #[derive(Clone, Eq, PartialEq, RuntimeDebug, Encode, Decode, TypeInfo, MaxEncodedLen)]
-pub struct RosterId([u8; 16]);
+pub struct RosterId(pub [u8; 16]);
 
 impl RosterId {
 	pub fn from_tuple<T: Config + pallet::Config>(

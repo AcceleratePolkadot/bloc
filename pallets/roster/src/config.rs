@@ -13,7 +13,12 @@ mod config {
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
 		/// Trait for handling fungible tokens
-		type Currency: Currency<Self::AccountId> + ReservableCurrency<Self::AccountId>;
+		type Currency: Currency<Self::AccountId>
+			+ NamedReservableCurrency<Self::AccountId, ReserveIdentifier = [u8; 24]>;
+
+		/// Deposit amount to create a roster
+		#[pallet::constant]
+		type NewRosterDeposit: Get<BalanceOf<Self>>;
 
 		/// Maximum length of the Roster title byte array
 		#[pallet::constant]

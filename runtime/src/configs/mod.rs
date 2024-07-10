@@ -129,7 +129,7 @@ impl pallet_balances::Config for Runtime {
 	type AccountStore = System;
 	type WeightInfo = (); // Configure based on benchmarking results.
 	type MaxReserves = ConstU32<50>;
-	type ReserveIdentifier = [u8; 8];
+	type ReserveIdentifier = [u8; 24];
 	type RuntimeHoldReason = RuntimeHoldReason;
 	type RuntimeFreezeReason = RuntimeFreezeReason;
 	type FreezeIdentifier = ();
@@ -278,6 +278,7 @@ impl pallet_collator_selection::Config for Runtime {
 
 parameter_types! {
 	pub const RosterPalletId: PalletId = PalletId(*b"py/rster");
+	pub const NewRosterDeposit: Balance = 50 * CENTIUNIT;
 	pub const TitleMaxLength: u32 = 200;
 	pub const MembersMax: u32 = u32::MAX;
 	pub const NominationVotesMax: u32 = u32::MAX;
@@ -303,6 +304,7 @@ impl pallet_roster::Config for Runtime {
 	type PalletId = RosterPalletId;
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
+	type NewRosterDeposit = NewRosterDeposit;
 	type TitleMaxLength = TitleMaxLength;
 	type MembersMax = MembersMax;
 	type NominationVotesMax = NominationVotesMax;
