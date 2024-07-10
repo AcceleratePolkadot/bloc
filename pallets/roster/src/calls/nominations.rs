@@ -286,4 +286,35 @@ impl<T: Config> NominationCalls<T> {
 
 		Ok(().into())
 	}
+
+	pub(crate) fn remove_member(
+		member: T::AccountId,
+		roster_id: RosterId,
+	) -> DispatchResultWithPostInfo {
+		Rosters::<T>::try_mutate(&roster_id, |roster| -> DispatchResult {
+			if let Some(roster) = roster {
+				ensure!(roster.members.contains(&member), Error::<T>::PermissionDenied);
+				roster.members.retain(|m| m != &member);
+
+				T::Currency::unreserve_named(
+					&pallet::Pallet::<T>::reserved_currency_name(
+						types::ReservedCurrencyReason::MembershipDues(roster_id.clone()),
+					),
+					&member,
+					T::MembershipDues::get(),
+				);
+
+				pallet::Pallet::deposit_event(Event::<T>::MemberRemoved {
+					member: member.clone(),
+					roster_id: roster_id.clone(),
+				});
+
+				Ok(())
+			} else {
+				return Err(Error::<T>::RosterDoesNotExist.into());
+			}
+		})?;
+
+		Ok(().into())
+	}
 }

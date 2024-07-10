@@ -186,7 +186,6 @@ mod calls {
 		/// Members can only be added if the nomination has been approved
 		///
 		/// - `roster_id`: The UUID for the roster
-		/// - `nominee`: AccountId of the account being nominated
 		///
 		/// Emits `MemberAdded`
 		#[pallet::call_index(34)]
@@ -194,6 +193,24 @@ mod calls {
 		pub fn add_member(origin: OriginFor<T>, roster_id: RosterId) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
 			NominationCalls::<T>::add_member(who, roster_id)
+		}
+
+		/// Remove a member to a roster
+		///
+		/// The dispatch origin of this call must be _Signed_
+		/// Will remove the origin account from the roster and unreserve their membership dues
+		///
+		/// - `roster_id`: The UUID for the roster
+		///
+		/// Emits `MemberAdded`
+		#[pallet::call_index(35)]
+		#[pallet::weight(Weight::from_parts(10_000, 0) + T::DbWeight::get().writes(1))]
+		pub fn remove_member(
+			origin: OriginFor<T>,
+			roster_id: RosterId,
+		) -> DispatchResultWithPostInfo {
+			let who = ensure_signed(origin)?;
+			NominationCalls::<T>::remove_member(who, roster_id)
 		}
 
 		/// Submit an expulsion proposal
