@@ -281,6 +281,7 @@ parameter_types! {
 	pub const NewRosterDeposit: Balance = 50 * CENTIUNIT;
 	pub const TitleMaxLength: u32 = 200;
 	pub const MembersMax: u32 = u32::MAX;
+	pub const NewNominationDeposit: Balance = 5 * CENTIUNIT;
 	pub const NominationVotesMax: u32 = u32::MAX;
 	pub const NominationVotingPeriod: BlockNumber = DAYS * 90;
 	pub const ConcludedNominationsMax: u32 = u32::MAX;
@@ -307,6 +308,7 @@ impl pallet_roster::Config for Runtime {
 	type NewRosterDeposit = NewRosterDeposit;
 	type TitleMaxLength = TitleMaxLength;
 	type MembersMax = MembersMax;
+	type NewNominationDeposit = NewNominationDeposit;
 	type NominationVotesMax = NominationVotesMax;
 	type NominationVotingPeriod = NominationVotingPeriod;
 	type ConcludedNominationsMax = ConcludedNominationsMax;

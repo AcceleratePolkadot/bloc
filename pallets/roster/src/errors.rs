@@ -44,6 +44,8 @@ mod errors {
 		NominationAlreadyApproved,
 		/// Nomination has already been rejected.
 		NominationAlreadyRejected,
+		/// Nomination was not approved.
+		NotApproved,
 		/// Could not add member to roster members.
 		CouldNotAddMember,
 		/// Could not add nomination to roster nominations list.

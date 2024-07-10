@@ -5,8 +5,10 @@
 /// <https://docs.substrate.io/build/custom-pallets/>
 pub use pallet::*;
 
+use codec::Encode;
 use frame_support::{pallet_macros::*, traits::Get};
 use sp_runtime::traits::AccountIdConversion;
+use sp_std::vec::Vec;
 
 mod calls;
 mod config;
@@ -118,9 +120,16 @@ impl<T: Config> Pallet<T> {
 		T::PalletId::get().into_account_truncating()
 	}
 
-	pub fn new_roster_reserve_name(roster_id: &RosterId) -> [u8; 24] {
+	pub fn reserved_currency_name(reason: ReservedCurrencyReason<T>) -> [u8; 24] {
 		let mut pallet_id = T::PalletId::get().0.to_vec();
-		pallet_id.extend(roster_id.clone().0.to_vec());
+		match reason {
+			ReservedCurrencyReason::NewRoster(roster_id) => pallet_id.extend(roster_id.0.to_vec()),
+			ReservedCurrencyReason::NewNomination(roster_id, nominee) => {
+				pallet_id.extend(roster_id.0.to_vec().iter().rev().take(8).rev());
+				let nominee_account_id: Vec<u8> = nominee.encode();
+				pallet_id.extend(nominee_account_id.iter().rev().take(8).rev());
+			},
+		};
 		match pallet_id.try_into() {
 			Ok(pallet_id) => pallet_id,
 			Err(_) => [0u8; 24],

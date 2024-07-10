@@ -28,6 +28,11 @@ mod config {
 		#[pallet::constant]
 		type MembersMax: Get<u32>;
 
+		/// Deposit amount to nominate a member
+		/// Returned once nomination is concluded
+		#[pallet::constant]
+		type NewNominationDeposit: Get<BalanceOf<Self>>;
+
 		/// Maximum number of votes that can be submitted for each nomination
 		/// This should probably be equal to MembersMax
 		#[pallet::constant]

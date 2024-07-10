@@ -206,3 +206,9 @@ pub enum ExpulsionProposalVoteValue {
 	Nay,
 	Abstain,
 }
+
+#[derive(Clone, Eq, PartialEq, RuntimeDebug, Encode, Decode, TypeInfo, MaxEncodedLen)]
+pub enum ReservedCurrencyReason<T: Config> {
+	NewRoster(RosterId),
+	NewNomination(RosterId, T::AccountId),
+}

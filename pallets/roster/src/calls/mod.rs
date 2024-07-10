@@ -177,6 +177,25 @@ mod calls {
 			NominationCalls::<T>::close(who, roster_id, nominee)
 		}
 
+		/// Add a member to a roster
+		///
+		/// The dispatch origin of this call must be _Signed_
+		/// The origin of the call must be the nominee
+		/// The origin will pay the membership dues
+		///
+		/// Members can only be added if the nomination has been approved
+		///
+		/// - `roster_id`: The UUID for the roster
+		/// - `nominee`: AccountId of the account being nominated
+		///
+		/// Emits `MemberAdded`
+		#[pallet::call_index(34)]
+		#[pallet::weight(Weight::from_parts(10_000, 0) + T::DbWeight::get().writes(1))]
+		pub fn add_member(origin: OriginFor<T>, roster_id: RosterId) -> DispatchResultWithPostInfo {
+			let who = ensure_signed(origin)?;
+			NominationCalls::<T>::add_member(who, roster_id)
+		}
+
 		/// Submit an expulsion proposal
 		///
 		/// The dispatch origin of this call must be _Signed_

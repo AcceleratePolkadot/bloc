@@ -88,6 +88,7 @@ parameter_types! {
 	pub const NewRosterDeposit: u64 = 1;
 	pub const TitleMaxLength: u32 = 200;
 	pub const MembersMax: u32 = u32::MAX;
+	pub const NewNominationDeposit: u64 = 1;
 	pub const NominationVotesMax: u32 = u32::MAX;
 	pub const NominationVotingPeriod: BlockNumber = 1;
 	pub const ConcludedNominationsMax: u32 = u32::MAX;
@@ -111,6 +112,7 @@ impl crate::Config for Test {
 	type Currency = Balances;
 	type NewRosterDeposit = NewRosterDeposit;
 	type TitleMaxLength = TitleMaxLength;
+	type NewNominationDeposit = NewNominationDeposit;
 	type MembersMax = MembersMax;
 	type NominationVotesMax = NominationVotesMax;
 	type NominationVotingPeriod = NominationVotingPeriod;

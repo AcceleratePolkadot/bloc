@@ -1,5 +1,6 @@
 use crate::*;
 use frame_support::pallet_prelude::*;
+use frame_support::traits::NamedReservableCurrency;
 use sp_runtime::Percent;
 
 pub struct NominationCalls<T> {
@@ -17,8 +18,8 @@ impl<T: Config> NominationCalls<T> {
 			Error::<T>::NominationAlreadyRejected
 		);
 		ensure!(
-			nomination.nominated_on + T::NominationVotingPeriod::get() >=
-				<frame_system::Pallet<T>>::block_number(),
+			nomination.nominated_on + T::NominationVotingPeriod::get()
+				>= <frame_system::Pallet<T>>::block_number(),
 			Error::<T>::VotingPeriodEnded
 		);
 		Ok(true)
@@ -92,6 +93,15 @@ impl<T: Config> NominationCalls<T> {
 			!Nominations::<T>::contains_key(&nominee, &roster_id),
 			Error::<T>::AlreadyNominated
 		);
+
+		T::Currency::reserve_named(
+			&pallet::Pallet::<T>::reserved_currency_name(
+				types::ReservedCurrencyReason::NewNomination(roster_id.clone(), nominee.clone()),
+			),
+			&nominator,
+			T::NewNominationDeposit::get(),
+		)
+		.map_err(|_| Error::<T>::InsufficientFunds)?;
 
 		// Create new nomination
 		let nomination = Nomination::new(&roster_id, &nominee, &nominator);
@@ -175,7 +185,7 @@ impl<T: Config> NominationCalls<T> {
 		// - the voting period has passed ||
 		// - the ayes or nays have exceeded the voting threshold ||
 		// - all members have voted
-		let mut roster = Rosters::<T>::get(&roster_id).ok_or(Error::<T>::RosterDoesNotExist)?;
+		let roster = Rosters::<T>::get(&roster_id).ok_or(Error::<T>::RosterDoesNotExist)?;
 		let ayes =
 			nomination.votes.iter().filter(|v| v.vote == NominationVoteValue::Aye).count() as u32;
 		let nays =
@@ -183,11 +193,11 @@ impl<T: Config> NominationCalls<T> {
 		let votes_threshold = Self::calculate_votes_threshold(&roster, &nomination)?;
 
 		ensure!(
-			nomination.nominated_on + T::NominationVotingPeriod::get() <
-				<frame_system::Pallet<T>>::block_number() ||
-				ayes >= votes_threshold ||
-				nays >= votes_threshold ||
-				nomination.votes.len() >= roster.members.len(),
+			nomination.nominated_on + T::NominationVotingPeriod::get()
+				< <frame_system::Pallet<T>>::block_number()
+				|| ayes >= votes_threshold
+				|| nays >= votes_threshold
+				|| nomination.votes.len() >= roster.members.len(),
 			Error::<T>::VotingPeriodHasNotEnded
 		);
 
@@ -199,22 +209,23 @@ impl<T: Config> NominationCalls<T> {
 
 		Nominations::<T>::insert(&nominee, &roster_id, &nomination);
 
-		// If nomination has been accepted add nominee to roster members
-		if nomination.status == NominationStatus::Approved {
-			roster
-				.members
-				.try_push(nominee.clone())
-				.map_err(|_| Error::<T>::CouldNotAddMember)?;
-			Rosters::<T>::insert(&roster_id, roster);
+		// If nomination has been rejected refund nominator and
+		// add nomination to concluded nominations
+		if nomination.status == NominationStatus::Rejected {
+			T::Currency::unreserve_named(
+				&pallet::Pallet::<T>::reserved_currency_name(
+					types::ReservedCurrencyReason::NewNomination(
+						roster_id.clone(),
+						nominee.clone(),
+					),
+				),
+				&nomination.nominator,
+				T::NewNominationDeposit::get(),
+			);
 
-			pallet::Pallet::deposit_event(Event::<T>::MemberAdded {
-				member: nominee.clone(),
-				roster_id: roster_id.clone(),
-			});
+			ConcludedNominations::<T>::try_append((&nominee, &roster_id))
+				.map_err(|_| Error::<T>::CouldNotAddToConcluded)?;
 		}
-
-		ConcludedNominations::<T>::try_append((&nominee, &roster_id))
-			.map_err(|_| Error::<T>::CouldNotAddToConcluded)?;
 
 		pallet::Pallet::deposit_event(Event::<T>::NominationClosed {
 			nominee,
@@ -222,6 +233,47 @@ impl<T: Config> NominationCalls<T> {
 			roster_id,
 			status: nomination.status,
 		});
+
+		Ok(().into())
+	}
+
+	pub(crate) fn add_member(
+		nominee: T::AccountId,
+		roster_id: RosterId,
+	) -> DispatchResultWithPostInfo {
+		let nomination = Nominations::<T>::get(&nominee, &roster_id)
+			.ok_or(Error::<T>::NominationDoesNotExist)?;
+
+		ensure!(nomination.status == NominationStatus::Approved, Error::<T>::NotApproved);
+
+		Rosters::<T>::try_mutate(&roster_id, |roster| -> DispatchResult {
+			if let Some(roster) = roster {
+				roster
+					.members
+					.try_push(nominee.clone())
+					.map_err(|_| Error::<T>::CouldNotAddMember)?;
+
+				pallet::Pallet::deposit_event(Event::<T>::MemberAdded {
+					member: nominee.clone(),
+					roster_id: roster_id.clone(),
+				});
+
+				Ok(())
+			} else {
+				return Err(Error::<T>::RosterDoesNotExist.into());
+			}
+		})?;
+
+		T::Currency::unreserve_named(
+			&pallet::Pallet::<T>::reserved_currency_name(
+				types::ReservedCurrencyReason::NewNomination(roster_id.clone(), nominee.clone()),
+			),
+			&nomination.nominator,
+			T::NewNominationDeposit::get(),
+		);
+
+		ConcludedNominations::<T>::try_append((&nominee, &roster_id))
+			.map_err(|_| Error::<T>::CouldNotAddToConcluded)?;
 
 		Ok(().into())
 	}

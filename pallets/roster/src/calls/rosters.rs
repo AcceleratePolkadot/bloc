@@ -48,7 +48,9 @@ impl<T: Config> RosterCalls<T> {
 		Rosters::<T>::insert(&roster_id, roster);
 
 		T::Currency::reserve_named(
-			&pallet::Pallet::<T>::new_roster_reserve_name(&roster_id),
+			&pallet::Pallet::<T>::reserved_currency_name(types::ReservedCurrencyReason::NewRoster(
+				roster_id.clone(),
+			)),
 			&founder,
 			T::NewRosterDeposit::get(),
 		)
@@ -146,7 +148,9 @@ impl<T: Config> RosterCalls<T> {
 		);
 
 		T::Currency::unreserve_named(
-			&pallet::Pallet::<T>::new_roster_reserve_name(&roster_id),
+			&pallet::Pallet::<T>::reserved_currency_name(types::ReservedCurrencyReason::NewRoster(
+				roster_id.clone(),
+			)),
 			&founder,
 			T::NewRosterDeposit::get(),
 		);
