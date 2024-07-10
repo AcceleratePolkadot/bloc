@@ -238,11 +238,11 @@ impl<T: Config> NominationCalls<T> {
 	}
 
 	pub(crate) fn add_member(
-		nominee: T::AccountId,
+		member: T::AccountId,
 		roster_id: RosterId,
 	) -> DispatchResultWithPostInfo {
-		let nomination = Nominations::<T>::get(&nominee, &roster_id)
-			.ok_or(Error::<T>::NominationDoesNotExist)?;
+		let nomination =
+			Nominations::<T>::get(&member, &roster_id).ok_or(Error::<T>::NominationDoesNotExist)?;
 
 		ensure!(nomination.status == NominationStatus::Approved, Error::<T>::NotApproved);
 
@@ -250,11 +250,11 @@ impl<T: Config> NominationCalls<T> {
 			if let Some(roster) = roster {
 				roster
 					.members
-					.try_push(nominee.clone())
+					.try_push(member.clone())
 					.map_err(|_| Error::<T>::CouldNotAddMember)?;
 
 				pallet::Pallet::deposit_event(Event::<T>::MemberAdded {
-					member: nominee.clone(),
+					member: member.clone(),
 					roster_id: roster_id.clone(),
 				});
 
@@ -264,15 +264,24 @@ impl<T: Config> NominationCalls<T> {
 			}
 		})?;
 
+		T::Currency::reserve_named(
+			&pallet::Pallet::<T>::reserved_currency_name(
+				types::ReservedCurrencyReason::MembershipDues(roster_id.clone()),
+			),
+			&member,
+			T::MembershipDues::get(),
+		)
+		.map_err(|_| Error::<T>::InsufficientFunds)?;
+
 		T::Currency::unreserve_named(
 			&pallet::Pallet::<T>::reserved_currency_name(
-				types::ReservedCurrencyReason::NewNomination(roster_id.clone(), nominee.clone()),
+				types::ReservedCurrencyReason::NewNomination(roster_id.clone(), member.clone()),
 			),
 			&nomination.nominator,
 			T::NewNominationDeposit::get(),
 		);
 
-		ConcludedNominations::<T>::try_append((&nominee, &roster_id))
+		ConcludedNominations::<T>::try_append((&member, &roster_id))
 			.map_err(|_| Error::<T>::CouldNotAddToConcluded)?;
 
 		Ok(().into())

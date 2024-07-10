@@ -8,7 +8,7 @@ pub use pallet::*;
 use codec::Encode;
 use frame_support::{pallet_macros::*, traits::Get};
 use sp_runtime::traits::AccountIdConversion;
-use sp_std::vec::Vec;
+use sp_std::{vec, vec::Vec};
 
 mod calls;
 mod config;
@@ -120,19 +120,32 @@ impl<T: Config> Pallet<T> {
 		T::PalletId::get().into_account_truncating()
 	}
 
-	pub fn reserved_currency_name(reason: ReservedCurrencyReason<T>) -> [u8; 24] {
+	pub fn reserved_currency_name(reason: ReservedCurrencyReason<T>) -> [u8; 27] {
+		let prefixes: ReservedCurrencyNamePrefixes = ReservedCurrencyNamePrefixes {
+			new_roster: vec![0, 0, 1],
+			new_nomination: vec![0, 0, 2],
+			membership_dues: vec![0, 0, 3],
+		};
 		let mut pallet_id = T::PalletId::get().0.to_vec();
 		match reason {
-			ReservedCurrencyReason::NewRoster(roster_id) => pallet_id.extend(roster_id.0.to_vec()),
+			ReservedCurrencyReason::NewRoster(roster_id) => {
+				pallet_id.extend(prefixes.new_roster);
+				pallet_id.extend(roster_id.0.to_vec());
+			},
 			ReservedCurrencyReason::NewNomination(roster_id, nominee) => {
+				pallet_id.extend(prefixes.new_nomination);
 				pallet_id.extend(roster_id.0.to_vec().iter().rev().take(8).rev());
 				let nominee_account_id: Vec<u8> = nominee.encode();
 				pallet_id.extend(nominee_account_id.iter().rev().take(8).rev());
 			},
+			ReservedCurrencyReason::MembershipDues(roster_id) => {
+				pallet_id.extend(prefixes.membership_dues);
+				pallet_id.extend(roster_id.0.to_vec());
+			},
 		};
 		match pallet_id.try_into() {
 			Ok(pallet_id) => pallet_id,
-			Err(_) => [0u8; 24],
+			Err(_) => [0u8; 27],
 		}
 	}
 }

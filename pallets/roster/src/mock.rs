@@ -27,7 +27,7 @@ frame_support::construct_runtime!(
 #[derive_impl(pallet_balances::config_preludes::TestDefaultConfig)]
 impl pallet_balances::Config for Test {
 	type AccountStore = System;
-	type ReserveIdentifier = [u8; 24];
+	type ReserveIdentifier = [u8; 27];
 }
 
 parameter_types! {
@@ -89,6 +89,7 @@ parameter_types! {
 	pub const TitleMaxLength: u32 = 200;
 	pub const MembersMax: u32 = u32::MAX;
 	pub const NewNominationDeposit: u64 = 1;
+	pub const MembershipDues: u64 = 1;
 	pub const NominationVotesMax: u32 = u32::MAX;
 	pub const NominationVotingPeriod: BlockNumber = 1;
 	pub const ConcludedNominationsMax: u32 = u32::MAX;
@@ -111,6 +112,7 @@ impl crate::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
 	type NewRosterDeposit = NewRosterDeposit;
+	type MembershipDues = MembershipDues;
 	type TitleMaxLength = TitleMaxLength;
 	type NewNominationDeposit = NewNominationDeposit;
 	type MembersMax = MembersMax;

@@ -129,7 +129,7 @@ impl pallet_balances::Config for Runtime {
 	type AccountStore = System;
 	type WeightInfo = (); // Configure based on benchmarking results.
 	type MaxReserves = ConstU32<50>;
-	type ReserveIdentifier = [u8; 24];
+	type ReserveIdentifier = [u8; 27];
 	type RuntimeHoldReason = RuntimeHoldReason;
 	type RuntimeFreezeReason = RuntimeFreezeReason;
 	type FreezeIdentifier = ();
@@ -282,6 +282,7 @@ parameter_types! {
 	pub const TitleMaxLength: u32 = 200;
 	pub const MembersMax: u32 = u32::MAX;
 	pub const NewNominationDeposit: Balance = 5 * CENTIUNIT;
+	pub const MembershipDues: Balance = 100 * CENTIUNIT;
 	pub const NominationVotesMax: u32 = u32::MAX;
 	pub const NominationVotingPeriod: BlockNumber = DAYS * 90;
 	pub const ConcludedNominationsMax: u32 = u32::MAX;
@@ -306,6 +307,7 @@ impl pallet_roster::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
 	type NewRosterDeposit = NewRosterDeposit;
+	type MembershipDues = MembershipDues;
 	type TitleMaxLength = TitleMaxLength;
 	type MembersMax = MembersMax;
 	type NewNominationDeposit = NewNominationDeposit;

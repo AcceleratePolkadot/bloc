@@ -210,5 +210,13 @@ pub enum ExpulsionProposalVoteValue {
 #[derive(Clone, Eq, PartialEq, RuntimeDebug, Encode, Decode, TypeInfo, MaxEncodedLen)]
 pub enum ReservedCurrencyReason<T: Config> {
 	NewRoster(RosterId),
+	// The roster and nominee
 	NewNomination(RosterId, T::AccountId),
+	MembershipDues(RosterId),
+}
+
+pub struct ReservedCurrencyNamePrefixes {
+	pub new_roster: Vec<u8>,
+	pub new_nomination: Vec<u8>,
+	pub membership_dues: Vec<u8>,
 }

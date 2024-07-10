@@ -14,7 +14,7 @@ mod config {
 
 		/// Trait for handling fungible tokens
 		type Currency: Currency<Self::AccountId>
-			+ NamedReservableCurrency<Self::AccountId, ReserveIdentifier = [u8; 24]>;
+			+ NamedReservableCurrency<Self::AccountId, ReserveIdentifier = [u8; 27]>;
 
 		/// Deposit amount to create a roster
 		#[pallet::constant]
@@ -32,6 +32,10 @@ mod config {
 		/// Returned once nomination is concluded
 		#[pallet::constant]
 		type NewNominationDeposit: Get<BalanceOf<Self>>;
+
+		/// Membership dues, can be slashed if the member is expelled
+		#[pallet::constant]
+		type MembershipDues: Get<BalanceOf<Self>>;
 
 		/// Maximum number of votes that can be submitted for each nomination
 		/// This should probably be equal to MembersMax
