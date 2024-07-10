@@ -287,6 +287,8 @@ parameter_types! {
 	pub const NominationVotingPeriod: BlockNumber = DAYS * 90;
 	pub const ConcludedNominationsMax: u32 = u32::MAX;
 	pub const NominationsPerRosterMax: u32 = u32::MAX;
+	pub const NewExpulsionProposalDeposit: Balance = 100 * CENTIUNIT;
+	pub const ExpulsionProposalReparations: u32 = 50;
 	pub const ExpulsionProposalAwaitingSecondPeriod: BlockNumber = DAYS * 5;
 	pub const ExpulsionProposalVotingPeriod: BlockNumber = DAYS * 30;
 	pub const ExpulsionProposalsPerRosterMax: u32 = u32::MAX;
@@ -315,6 +317,8 @@ impl pallet_roster::Config for Runtime {
 	type NominationVotingPeriod = NominationVotingPeriod;
 	type ConcludedNominationsMax = ConcludedNominationsMax;
 	type NominationsPerRosterMax = NominationsPerRosterMax;
+	type NewExpulsionProposalDeposit = NewExpulsionProposalDeposit;
+	type ExpulsionProposalReparations = ExpulsionProposalReparations;
 	type ExpulsionProposalAwaitingSecondPeriod = ExpulsionProposalAwaitingSecondPeriod;
 	type ExpulsionProposalVotingPeriod = ExpulsionProposalVotingPeriod;
 	type ExpulsionProposalsPerRosterMax = ExpulsionProposalsPerRosterMax;

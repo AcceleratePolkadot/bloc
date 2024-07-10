@@ -125,26 +125,37 @@ impl<T: Config> Pallet<T> {
 			new_roster: vec![0, 0, 1],
 			new_nomination: vec![0, 0, 2],
 			membership_dues: vec![0, 0, 3],
+			new_expulsion_proposal: vec![0, 0, 4],
 		};
-		let mut pallet_id = T::PalletId::get().0.to_vec();
+		let mut name = Vec::new();
 		match reason {
 			ReservedCurrencyReason::NewRoster(roster_id) => {
-				pallet_id.extend(prefixes.new_roster);
-				pallet_id.extend(roster_id.0.to_vec());
+				name.extend(prefixes.new_roster);
+				name.extend(T::PalletId::get().0.to_vec());
+				name.extend(roster_id.0.to_vec());
 			},
 			ReservedCurrencyReason::NewNomination(roster_id, nominee) => {
-				pallet_id.extend(prefixes.new_nomination);
-				pallet_id.extend(roster_id.0.to_vec().iter().rev().take(8).rev());
+				name.extend(prefixes.new_nomination);
+				name.extend(T::PalletId::get().0.to_vec());
+				name.extend(roster_id.0.to_vec().iter().take(8));
 				let nominee_account_id: Vec<u8> = nominee.encode();
-				pallet_id.extend(nominee_account_id.iter().rev().take(8).rev());
+				name.extend(nominee_account_id.iter().take(8));
 			},
 			ReservedCurrencyReason::MembershipDues(roster_id) => {
-				pallet_id.extend(prefixes.membership_dues);
-				pallet_id.extend(roster_id.0.to_vec());
+				name.extend(prefixes.membership_dues);
+				name.extend(T::PalletId::get().0.to_vec());
+				name.extend(roster_id.0.to_vec());
+			},
+			ReservedCurrencyReason::NewExpulsionProposal(roster_id, subject) => {
+				name.extend(prefixes.new_expulsion_proposal);
+				name.extend(T::PalletId::get().0.to_vec());
+				name.extend(roster_id.0.to_vec().iter().take(8));
+				let subject_account_id: Vec<u8> = subject.encode();
+				name.extend(subject_account_id.iter().take(8));
 			},
 		};
-		match pallet_id.try_into() {
-			Ok(pallet_id) => pallet_id,
+		match name.try_into() {
+			Ok(name) => name,
 			Err(_) => [0u8; 27],
 		}
 	}

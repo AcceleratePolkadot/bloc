@@ -161,11 +161,20 @@ impl<T: Config> ExpulsionCalls<T> {
 		Rosters::<T>::insert(&roster_id, roster);
 
 		pallet::Pallet::deposit_event(Event::<T>::NewExpulsionProposal {
-			motioner,
-			subject,
-			roster_id,
+			motioner: motioner.clone(),
+			subject: subject.clone(),
+			roster_id: roster_id.clone(),
 			reason: bounded_reason,
 		});
+
+		T::Currency::reserve_named(
+			&pallet::Pallet::<T>::reserved_currency_name(
+				types::ReservedCurrencyReason::NewExpulsionProposal(roster_id, subject),
+			),
+			&motioner,
+			T::NewExpulsionProposalDeposit::get(),
+		)
+		.map_err(|_| Error::<T>::InsufficientFunds)?;
 
 		Ok(().into())
 	}
@@ -351,10 +360,47 @@ impl<T: Config> ExpulsionCalls<T> {
 			Self::remove_proposal_from_roster(&roster, &motioner, &subject);
 			pallet::Pallet::deposit_event(Event::<T>::ExpulsionProposalDismissedWithPrejudice {
 				closer,
-				motioner,
-				subject,
-				roster_id,
+				motioner: motioner.clone(),
+				subject: subject.clone(),
+				roster_id: roster_id.clone(),
 			});
+
+			// Slash the motioner's deposit
+			// The subject receives `ExpulsionProposalReparations` percent of the deposit
+			// The rest goes into the pot
+			let pot = pallet::Pallet::<T>::account_id();
+			let balance_status = BalanceStatus::Free;
+			let reparations = Percent::from_percent(
+				T::ExpulsionProposalReparations::get().try_into().unwrap_or(50),
+			) * T::NewExpulsionProposalDeposit::get();
+
+			let repatriation_to_subject = T::Currency::repatriate_reserved_named(
+				&pallet::Pallet::<T>::reserved_currency_name(
+					types::ReservedCurrencyReason::NewExpulsionProposal(
+						roster_id.clone(),
+						subject.clone(),
+					),
+				),
+				&motioner,
+				&subject,
+				reparations,
+				balance_status,
+			);
+
+			let repatriation_to_pot = T::Currency::repatriate_all_reserved_named(
+				&pallet::Pallet::<T>::reserved_currency_name(
+					types::ReservedCurrencyReason::NewExpulsionProposal(
+						roster_id.clone(),
+						subject.clone(),
+					),
+				),
+				&motioner,
+				&pot,
+				balance_status,
+			);
+
+			ensure!(repatriation_to_subject.is_ok(), Error::<T>::CouldNotSlash);
+			ensure!(repatriation_to_pot.is_ok(), Error::<T>::CouldNotSlash);
 		} else {
 			let voting_opened_on = expulsion_proposal
 				.voting_opened_on
@@ -424,13 +470,12 @@ impl<T: Config> ExpulsionCalls<T> {
 				// Slash their membership dues
 				let pot = pallet::Pallet::<T>::account_id();
 				let balance_status = BalanceStatus::Free;
-				let repatriation_result = T::Currency::repatriate_reserved_named(
+				let repatriation_result = T::Currency::repatriate_all_reserved_named(
 					&pallet::Pallet::<T>::reserved_currency_name(
 						types::ReservedCurrencyReason::MembershipDues(roster_id),
 					),
 					&subject,
 					&pot,
-					T::MembershipDues::get(),
 					balance_status,
 				);
 

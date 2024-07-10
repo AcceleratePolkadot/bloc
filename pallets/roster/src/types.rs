@@ -213,10 +213,13 @@ pub enum ReservedCurrencyReason<T: Config> {
 	// The roster and nominee
 	NewNomination(RosterId, T::AccountId),
 	MembershipDues(RosterId),
+	// The roster and the subject of the proposal
+	NewExpulsionProposal(RosterId, T::AccountId),
 }
 
 pub struct ReservedCurrencyNamePrefixes {
 	pub new_roster: Vec<u8>,
 	pub new_nomination: Vec<u8>,
 	pub membership_dues: Vec<u8>,
+	pub new_expulsion_proposal: Vec<u8>,
 }

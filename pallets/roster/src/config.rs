@@ -57,6 +57,16 @@ mod config {
 		#[pallet::constant]
 		type ConcludedNominationsMax: Get<u32>;
 
+		/// Deposit amount to create an expulsion proposal
+		/// If the proposal is dismissed with prejudice, the deposit is slashed
+		#[pallet::constant]
+		type NewExpulsionProposalDeposit: Get<BalanceOf<Self>>;
+
+		/// Percentage of the expulsion proposal deposit to be paid to the subject
+		/// if the proposal is dismissed with prejudice
+		#[pallet::constant]
+		type ExpulsionProposalReparations: Get<u32>;
+
 		/// Period in which seconds should come forward to support an expulsion proposal
 		/// If this period expires and a proposal has not been seconded it can be
 		/// closed with prejudice

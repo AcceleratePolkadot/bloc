@@ -94,6 +94,8 @@ parameter_types! {
 	pub const NominationVotingPeriod: BlockNumber = 1;
 	pub const ConcludedNominationsMax: u32 = u32::MAX;
 	pub const NominationsPerRosterMax: u32 = u32::MAX;
+	pub const NewExpulsionProposalDeposit: u64 = 1;
+	pub const ExpulsionProposalReparations: u32 = 50;
 	pub const ExpulsionProposalAwaitingSecondPeriod: BlockNumber = 1;
 	pub const ExpulsionProposalVotingPeriod: BlockNumber = 1;
 	pub const ExpulsionProposalsPerRosterMax: u32 = u32::MAX;
@@ -120,6 +122,8 @@ impl crate::Config for Test {
 	type NominationVotingPeriod = NominationVotingPeriod;
 	type ConcludedNominationsMax = ConcludedNominationsMax;
 	type NominationsPerRosterMax = NominationsPerRosterMax;
+	type NewExpulsionProposalDeposit = NewExpulsionProposalDeposit;
+	type ExpulsionProposalReparations = ExpulsionProposalReparations;
 	type ExpulsionProposalAwaitingSecondPeriod = ExpulsionProposalAwaitingSecondPeriod;
 	type ExpulsionProposalVotingPeriod = ExpulsionProposalVotingPeriod;
 	type ExpulsionProposalsPerRosterMax = ExpulsionProposalsPerRosterMax;
