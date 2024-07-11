@@ -346,11 +346,6 @@ impl<T: Config> ExpulsionCalls<T> {
 
 		// Closer must be a member of the roster.
 		ensure!(roster.members.contains(&closer), Error::<T>::PermissionDenied);
-		// Expulsion proposal must be in Voting state
-		ensure!(
-			expulsion_proposal.status == ExpulsionProposalStatus::Voting,
-			Error::<T>::PermissionDenied
-		);
 
 		if Self::can_dismiss_expulsion_proposal_with_prejudice(&roster, &expulsion_proposal) {
 			// Dismiss proposal with prejudice
@@ -374,7 +369,7 @@ impl<T: Config> ExpulsionCalls<T> {
 				T::ExpulsionProposalReparations::get().try_into().unwrap_or(50),
 			) * T::NewExpulsionProposalDeposit::get();
 
-			let repatriation_to_subject = T::Currency::repatriate_reserved_named(
+			T::Currency::repatriate_reserved_named(
 				&pallet::Pallet::<T>::reserved_currency_name(
 					types::ReservedCurrencyReason::NewExpulsionProposal(
 						roster_id.clone(),
@@ -385,9 +380,9 @@ impl<T: Config> ExpulsionCalls<T> {
 				&subject,
 				reparations,
 				balance_status,
-			);
+			)?;
 
-			let repatriation_to_pot = T::Currency::repatriate_all_reserved_named(
+			T::Currency::repatriate_all_reserved_named(
 				&pallet::Pallet::<T>::reserved_currency_name(
 					types::ReservedCurrencyReason::NewExpulsionProposal(
 						roster_id.clone(),
@@ -397,11 +392,14 @@ impl<T: Config> ExpulsionCalls<T> {
 				&motioner,
 				&pot,
 				balance_status,
+			)?;
+		} else {
+			// Expulsion proposal must be in Voting state
+			ensure!(
+				expulsion_proposal.status == ExpulsionProposalStatus::Voting,
+				Error::<T>::PermissionDenied
 			);
 
-			ensure!(repatriation_to_subject.is_ok(), Error::<T>::CouldNotSlash);
-			ensure!(repatriation_to_pot.is_ok(), Error::<T>::CouldNotSlash);
-		} else {
 			let voting_opened_on = expulsion_proposal
 				.voting_opened_on
 				.unwrap_or(<frame_system::Pallet<T>>::block_number());
