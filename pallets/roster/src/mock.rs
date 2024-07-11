@@ -13,6 +13,9 @@ use sp_runtime::{
 
 type Block = frame_system::mocking::MockBlock<Test>;
 type BlockNumber = u32;
+pub type Balance = u64;
+
+pub const CENTIUNIT: Balance = 10_000_000_000;
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
@@ -85,16 +88,16 @@ impl frame_support::migrations::MultiStepMigrator for MockedMigrator {
 
 parameter_types! {
 	pub const RosterPalletId: PalletId = PalletId(*b"py/rster");
-	pub const NewRosterDeposit: u64 = 1;
+	pub const NewRosterDeposit: Balance = 1 * CENTIUNIT;
 	pub const TitleMaxLength: u32 = 200;
 	pub const MembersMax: u32 = u32::MAX;
-	pub const NewNominationDeposit: u64 = 1;
+	pub const NewNominationDeposit: Balance = 1 * CENTIUNIT;
 	pub const MembershipDues: u64 = 1;
 	pub const NominationVotesMax: u32 = u32::MAX;
 	pub const NominationVotingPeriod: BlockNumber = 1;
 	pub const ConcludedNominationsMax: u32 = u32::MAX;
 	pub const NominationsPerRosterMax: u32 = u32::MAX;
-	pub const NewExpulsionProposalDeposit: u64 = 1;
+	pub const NewExpulsionProposalDeposit: Balance = 1 * CENTIUNIT;
 	pub const ExpulsionProposalReparations: u32 = 50;
 	pub const ExpulsionProposalAwaitingSecondPeriod: BlockNumber = 1;
 	pub const ExpulsionProposalVotingPeriod: BlockNumber = 1;
@@ -102,7 +105,7 @@ parameter_types! {
 	pub const ExpulsionProposalSecondThreshold: u32 = 1;
 	pub const SecondsMax: u32 = u32::MAX;
 	pub const ExpulsionReasonMaxLength: u32 = 5000;
-	pub const ExpulsionReasonMinLength: u32 = 200;
+	pub const ExpulsionReasonMinLength: u32 = 1;
 	pub const ExpulsionProposalVotesMax: u32 = u32::MAX;
 	pub const ExpulsionProposalLockoutPeriod: BlockNumber = 1;
 	pub const ExpulsionProposalSuperMajority: u32 = 75;
