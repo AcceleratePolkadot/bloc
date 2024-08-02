@@ -278,26 +278,26 @@ impl pallet_collator_selection::Config for Runtime {
 
 parameter_types! {
 	pub const RosterPalletId: PalletId = PalletId(*b"py/rster");
-	pub const NewRosterDeposit: Balance = 50 * CENTIUNIT;
+	pub const NewRosterDeposit: Balance = 1000 * UNIT;
 	pub const TitleMaxLength: u32 = 200;
 	pub const MembersMax: u32 = u32::MAX;
-	pub const NewNominationDeposit: Balance = 5 * CENTIUNIT;
-	pub const MembershipDues: Balance = 100 * CENTIUNIT;
+	pub const NewNominationDeposit: Balance = 10 * UNIT;
+	pub const MembershipDues: Balance = 100 * UNIT;
 	pub const NominationVotesMax: u32 = u32::MAX;
-	pub const NominationVotingPeriod: BlockNumber = DAYS * 90;
+	pub const NominationVotingPeriod: BlockNumber = MINUTES * 5;
 	pub const ConcludedNominationsMax: u32 = u32::MAX;
 	pub const NominationsPerRosterMax: u32 = u32::MAX;
-	pub const NewExpulsionProposalDeposit: Balance = 100 * CENTIUNIT;
+	pub const NewExpulsionProposalDeposit: Balance = 500 * UNIT;
 	pub const ExpulsionProposalReparations: u32 = 50;
-	pub const ExpulsionProposalAwaitingSecondPeriod: BlockNumber = DAYS * 5;
-	pub const ExpulsionProposalVotingPeriod: BlockNumber = DAYS * 30;
+	pub const ExpulsionProposalAwaitingSecondPeriod: BlockNumber = MINUTES * 5;
+	pub const ExpulsionProposalVotingPeriod: BlockNumber = MINUTES * 5;
 	pub const ExpulsionProposalsPerRosterMax: u32 = u32::MAX;
 	pub const ExpulsionProposalSecondThreshold: u32 = 1;
 	pub const SecondsMax: u32 = u32::MAX;
 	pub const ExpulsionReasonMaxLength: u32 = 5000;
 	pub const ExpulsionReasonMinLength: u32 = 200;
 	pub const ExpulsionProposalVotesMax: u32 = u32::MAX;
-	pub const ExpulsionProposalLockoutPeriod: BlockNumber = DAYS * 180;
+	pub const ExpulsionProposalLockoutPeriod: BlockNumber = MINUTES * 5;
 	pub const ExpulsionProposalSuperMajority: u32 = 75;
 	pub const ExpulsionProposalQuorum: u32 = 50;
 
