@@ -14,9 +14,9 @@ mod weights;
 
 use smallvec::smallvec;
 use sp_runtime::{
-    create_runtime_str, generic, impl_opaque_keys,
-    traits::{BlakeTwo256, IdentifyAccount, Verify},
-    MultiSignature,
+	create_runtime_str, generic, impl_opaque_keys,
+	traits::{BlakeTwo256, IdentifyAccount, Verify},
+	MultiSignature,
 };
 
 use sp_std::prelude::*;
@@ -25,14 +25,16 @@ use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
 use frame_support::{
-    construct_runtime,
-    weights::{
-        constants::WEIGHT_REF_TIME_PER_SECOND, Weight, WeightToFeeCoefficient,
-        WeightToFeeCoefficients, WeightToFeePolynomial,
-    },
+	construct_runtime,
+	weights::{
+		constants::WEIGHT_REF_TIME_PER_SECOND, Weight, WeightToFeeCoefficient,
+		WeightToFeeCoefficients, WeightToFeePolynomial,
+	},
 };
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 pub use sp_runtime::{MultiAddress, Perbill, Permill};
+
+pub use pallet_roster;
 
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
@@ -75,29 +77,29 @@ pub type BlockId = generic::BlockId<Block>;
 
 /// The SignedExtension to the basic transaction logic.
 pub type SignedExtra = (
-    frame_system::CheckNonZeroSender<Runtime>,
-    frame_system::CheckSpecVersion<Runtime>,
-    frame_system::CheckTxVersion<Runtime>,
-    frame_system::CheckGenesis<Runtime>,
-    frame_system::CheckEra<Runtime>,
-    frame_system::CheckNonce<Runtime>,
-    frame_system::CheckWeight<Runtime>,
-    pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
-    cumulus_primitives_storage_weight_reclaim::StorageWeightReclaim<Runtime>,
-    frame_metadata_hash_extension::CheckMetadataHash<Runtime>,
+	frame_system::CheckNonZeroSender<Runtime>,
+	frame_system::CheckSpecVersion<Runtime>,
+	frame_system::CheckTxVersion<Runtime>,
+	frame_system::CheckGenesis<Runtime>,
+	frame_system::CheckEra<Runtime>,
+	frame_system::CheckNonce<Runtime>,
+	frame_system::CheckWeight<Runtime>,
+	pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
+	cumulus_primitives_storage_weight_reclaim::StorageWeightReclaim<Runtime>,
+	frame_metadata_hash_extension::CheckMetadataHash<Runtime>,
 );
 
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic =
-    generic::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
+	generic::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
 
 /// Executive: handles dispatch to the various modules.
 pub type Executive = frame_executive::Executive<
-    Runtime,
-    Block,
-    frame_system::ChainContext<Runtime>,
-    Runtime,
-    AllPalletsWithSystem,
+	Runtime,
+	Block,
+	frame_system::ChainContext<Runtime>,
+	Runtime,
+	AllPalletsWithSystem,
 >;
 
 /// Handles converting a weight scalar to a fee value, based on the scale and granularity of the
@@ -112,19 +114,19 @@ pub type Executive = frame_executive::Executive<
 ///   - Setting it to `1` will cause the literal `#[weight = x]` values to be charged.
 pub struct WeightToFee;
 impl WeightToFeePolynomial for WeightToFee {
-    type Balance = Balance;
-    fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
-        // in Rococo, extrinsic base weight (smallest non-zero weight) is mapped to 1 MILLIUNIT:
-        // in our template, we map to 1/10 of that, or 1/10 MILLIUNIT
-        let p = MILLIUNIT / 10;
-        let q = 100 * Balance::from(ExtrinsicBaseWeight::get().ref_time());
-        smallvec![WeightToFeeCoefficient {
-            degree: 1,
-            negative: false,
-            coeff_frac: Perbill::from_rational(p % q, q),
-            coeff_integer: p / q,
-        }]
-    }
+	type Balance = Balance;
+	fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
+		// in Rococo, extrinsic base weight (smallest non-zero weight) is mapped to 1 MILLIUNIT:
+		// in our template, we map to 1/10 of that, or 1/10 MILLIUNIT
+		let p = MILLIUNIT / 10;
+		let q = 100 * Balance::from(ExtrinsicBaseWeight::get().ref_time());
+		smallvec![WeightToFeeCoefficient {
+			degree: 1,
+			negative: false,
+			coeff_frac: Perbill::from_rational(p % q, q),
+			coeff_integer: p / q,
+		}]
+	}
 }
 
 /// Opaque types. These are used by the CLI to instantiate machinery that don't need to know
@@ -132,39 +134,39 @@ impl WeightToFeePolynomial for WeightToFee {
 /// of data like extrinsics, allowing for them to continue syncing the network through upgrades
 /// to even the core data structures.
 pub mod opaque {
-    use super::*;
-    use sp_runtime::{
-        generic,
-        traits::{BlakeTwo256, Hash as HashT},
-    };
+	use super::*;
+	use sp_runtime::{
+		generic,
+		traits::{BlakeTwo256, Hash as HashT},
+	};
 
-    pub use sp_runtime::OpaqueExtrinsic as UncheckedExtrinsic;
-    /// Opaque block header type.
-    pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
-    /// Opaque block type.
-    pub type Block = generic::Block<Header, UncheckedExtrinsic>;
-    /// Opaque block identifier type.
-    pub type BlockId = generic::BlockId<Block>;
-    /// Opaque block hash type.
-    pub type Hash = <BlakeTwo256 as HashT>::Output;
+	pub use sp_runtime::OpaqueExtrinsic as UncheckedExtrinsic;
+	/// Opaque block header type.
+	pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
+	/// Opaque block type.
+	pub type Block = generic::Block<Header, UncheckedExtrinsic>;
+	/// Opaque block identifier type.
+	pub type BlockId = generic::BlockId<Block>;
+	/// Opaque block hash type.
+	pub type Hash = <BlakeTwo256 as HashT>::Output;
 }
 
 impl_opaque_keys! {
-    pub struct SessionKeys {
-        pub aura: Aura,
-    }
+	pub struct SessionKeys {
+		pub aura: Aura,
+	}
 }
 
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
-    spec_name: create_runtime_str!("bloc-runtime"),
-    impl_name: create_runtime_str!("bloc-runtime"),
-    authoring_version: 1,
-    spec_version: 1,
-    impl_version: 0,
-    apis: apis::RUNTIME_API_VERSIONS,
-    transaction_version: 1,
-    state_version: 1,
+	spec_name: create_runtime_str!("bloc-runtime"),
+	impl_name: create_runtime_str!("bloc-runtime"),
+	authoring_version: 1,
+	spec_version: 1,
+	impl_version: 0,
+	apis: apis::RUNTIME_API_VERSIONS,
+	transaction_version: 1,
+	state_version: 1,
 };
 
 /// This determines the average expected block time that we are targeting.
@@ -203,8 +205,8 @@ const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 
 /// We allow for 2 seconds of compute with a 6-second average block.
 const MAXIMUM_BLOCK_WEIGHT: Weight = Weight::from_parts(
-    WEIGHT_REF_TIME_PER_SECOND.saturating_mul(2),
-    cumulus_primitives_core::relay_chain::MAX_POV_SIZE as u64,
+	WEIGHT_REF_TIME_PER_SECOND.saturating_mul(2),
+	cumulus_primitives_core::relay_chain::MAX_POV_SIZE as u64,
 );
 
 /// Maximum number of blocks simultaneously accepted by the Runtime, not yet included
@@ -218,55 +220,55 @@ const RELAY_CHAIN_SLOT_DURATION_MILLIS: u32 = 6000;
 
 /// Aura consensus hook
 type ConsensusHook = cumulus_pallet_aura_ext::FixedVelocityConsensusHook<
-    Runtime,
-    RELAY_CHAIN_SLOT_DURATION_MILLIS,
-    BLOCK_PROCESSING_VELOCITY,
-    UNINCLUDED_SEGMENT_CAPACITY,
+	Runtime,
+	RELAY_CHAIN_SLOT_DURATION_MILLIS,
+	BLOCK_PROCESSING_VELOCITY,
+	UNINCLUDED_SEGMENT_CAPACITY,
 >;
 
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
 pub fn native_version() -> NativeVersion {
-    NativeVersion {
-        runtime_version: VERSION,
-        can_author_with: Default::default(),
-    }
+	NativeVersion { runtime_version: VERSION, can_author_with: Default::default() }
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
-    // While this macro defines the pallets conforming the runtime,
-    // the ones to be benchmarked need to be explicitly passed to `define_benchmarks!`.
-    pub enum Runtime {
-        // System support stuff.
-        System: frame_system = 0,
-        ParachainSystem: cumulus_pallet_parachain_system = 1,
-        Timestamp: pallet_timestamp = 2,
-        ParachainInfo: parachain_info = 3,
+	// While this macro defines the pallets conforming the runtime,
+	// the ones to be benchmarked need to be explicitly passed to `define_benchmarks!`.
+	pub enum Runtime {
+		// System support stuff.
+		System: frame_system = 0,
+		ParachainSystem: cumulus_pallet_parachain_system = 1,
+		Timestamp: pallet_timestamp = 2,
+		ParachainInfo: parachain_info = 3,
 
-        // Monetary stuff.
-        Balances: pallet_balances = 10,
-        TransactionPayment: pallet_transaction_payment = 11,
+		// Monetary stuff.
+		Balances: pallet_balances = 10,
+		TransactionPayment: pallet_transaction_payment = 11,
 
-        // Governance
-        Sudo: pallet_sudo = 15,
+		// Governance
+		Sudo: pallet_sudo = 15,
 
-        // Collator support. The order of these 4 are important and shall not change.
-        Authorship: pallet_authorship = 20,
-        CollatorSelection: pallet_collator_selection = 21,
-        Session: pallet_session = 22,
-        Aura: pallet_aura = 23,
-        AuraExt: cumulus_pallet_aura_ext = 24,
+		// Collator support. The order of these 4 are important and shall not change.
+		Authorship: pallet_authorship = 20,
+		CollatorSelection: pallet_collator_selection = 21,
+		Session: pallet_session = 22,
+		Aura: pallet_aura = 23,
+		AuraExt: cumulus_pallet_aura_ext = 24,
 
-        // XCM helpers.
-        XcmpQueue: cumulus_pallet_xcmp_queue = 30,
-        PolkadotXcm: pallet_xcm = 31,
-        CumulusXcm: cumulus_pallet_xcm = 32,
-        MessageQueue: pallet_message_queue = 33,
-    }
+		// XCM helpers.
+		XcmpQueue: cumulus_pallet_xcmp_queue = 30,
+		PolkadotXcm: pallet_xcm = 31,
+		CumulusXcm: cumulus_pallet_xcm = 32,
+		MessageQueue: pallet_message_queue = 33,
+
+		// Local
+		Roster: pallet_roster = 40,
+	}
 );
 
 cumulus_pallet_parachain_system::register_validate_block! {
-    Runtime = Runtime,
-    BlockExecutor = cumulus_pallet_aura_ext::BlockExecutor::<Runtime, Executive>,
+	Runtime = Runtime,
+	BlockExecutor = cumulus_pallet_aura_ext::BlockExecutor::<Runtime, Executive>,
 }

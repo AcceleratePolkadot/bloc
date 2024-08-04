@@ -76,6 +76,9 @@ pallet-collator-selection.workspace = true
 parachains-common.workspace = true
 parachain-info.workspace = true
 
+# Local
+pallet-roster = { path = "../pallets/roster", default-features = false }
+
 [features]
 default = ["std"]
 std = [
@@ -103,6 +106,7 @@ std = [
     "pallet-balances/std",
     "pallet-collator-selection/std",
     "pallet-message-queue/std",
+    "pallet-roster/std",
     "pallet-session/std",
     "pallet-sudo/std",
     "pallet-timestamp/std",
@@ -144,6 +148,7 @@ runtime-benchmarks = [
     "pallet-balances/runtime-benchmarks",
     "pallet-collator-selection/runtime-benchmarks",
     "pallet-message-queue/runtime-benchmarks",
+    "pallet-roster/runtime-benchmarks",
     "pallet-sudo/runtime-benchmarks",
     "pallet-timestamp/runtime-benchmarks",
     "pallet-xcm/runtime-benchmarks",
@@ -169,6 +174,7 @@ try-runtime = [
     "pallet-balances/try-runtime",
     "pallet-collator-selection/try-runtime",
     "pallet-message-queue/try-runtime",
+    "pallet-roster/try-runtime",
     "pallet-session/try-runtime",
     "pallet-sudo/try-runtime",
     "pallet-timestamp/try-runtime",
