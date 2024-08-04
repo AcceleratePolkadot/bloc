@@ -1,6 +1,5 @@
 use crate::*;
-use frame_support::pallet_prelude::*;
-use frame_support::traits::NamedReservableCurrency;
+use frame_support::{pallet_prelude::*, traits::NamedReservableCurrency};
 use sp_runtime::Percent;
 
 pub struct NominationCalls<T> {
