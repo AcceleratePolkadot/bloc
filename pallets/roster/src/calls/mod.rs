@@ -33,6 +33,44 @@ mod calls {
 			Ok(().into())
 		}
 
+		/// Force add a member to a roster without a nomination vote
+		///
+		/// The dispatch origin of this call must be root
+		///
+		/// - `member`: Account Id of the member to add
+		/// - `roster_id`: The UUID for the roster
+		///
+		/// Emits `MemberAdded`
+		#[pallet::call_index(2)]
+		#[pallet::weight(Weight::from_parts(10_000, 0) + T::DbWeight::get().writes(1))]
+		pub fn force_add_member(
+			origin: OriginFor<T>,
+			member: T::AccountId,
+			roster_id: RosterId,
+		) -> DispatchResultWithPostInfo {
+			ensure_root(origin)?;
+			NominationCalls::<T>::force_add_member(member, roster_id)
+		}
+
+		/// Force expel a member to a roster without an expulsion proposal
+		///
+		/// The dispatch origin of this call must be root
+		///
+		/// - `member`: Account Id of the member to expel
+		/// - `roster_id`: The UUID for the roster
+		///
+		/// Emits `MemberRemoved`
+		#[pallet::call_index(3)]
+		#[pallet::weight(Weight::from_parts(10_000, 0) + T::DbWeight::get().writes(1))]
+		pub fn force_expel_member(
+			origin: OriginFor<T>,
+			member: T::AccountId,
+			roster_id: RosterId,
+		) -> DispatchResultWithPostInfo {
+			ensure_root(origin)?;
+			ExpulsionCalls::<T>::force_expel_member(member, roster_id)
+		}
+
 		/// Create a new roster
 		///
 		/// New rosters are created as active

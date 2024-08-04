@@ -482,4 +482,35 @@ impl<T: Config> ExpulsionCalls<T> {
 
 		Ok(().into())
 	}
+
+	pub(crate) fn force_expel_member(
+		member: T::AccountId,
+		roster_id: RosterId,
+	) -> DispatchResultWithPostInfo {
+		let mut roster = Self::active_roster(&roster_id)?;
+
+		// Can't expel someone who isn't in the Roster
+		ensure!(roster.members.contains(&member), Error::<T>::PermissionDenied);
+
+		roster.members.retain(|m| m != &member);
+		Rosters::<T>::insert(&roster_id, roster);
+		pallet::Pallet::deposit_event(Event::<T>::MemberRemoved {
+			member: member.clone(),
+			roster_id: roster_id.clone(),
+		});
+
+		// Slash their membership dues
+		let pot = pallet::Pallet::<T>::account_id().ok_or(Error::<T>::TreasuryDoesNotExist)?;
+		let balance_status = BalanceStatus::Free;
+		T::Currency::repatriate_all_reserved_named(
+			&pallet::Pallet::<T>::reserved_currency_name(
+				types::ReservedCurrencyReason::MembershipDues(roster_id),
+			),
+			&member,
+			&pot,
+			balance_status,
+		)?;
+
+		Ok(().into())
+	}
 }

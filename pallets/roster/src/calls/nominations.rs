@@ -319,4 +319,38 @@ impl<T: Config> NominationCalls<T> {
 
 		Ok(().into())
 	}
+
+	pub(crate) fn force_add_member(
+		member: T::AccountId,
+		roster_id: RosterId,
+	) -> DispatchResultWithPostInfo {
+		Rosters::<T>::try_mutate(&roster_id, |roster| -> DispatchResult {
+			if let Some(roster) = roster {
+				roster
+					.members
+					.try_push(member.clone())
+					.map_err(|_| Error::<T>::CouldNotAddMember)?;
+
+				pallet::Pallet::deposit_event(Event::<T>::MemberAdded {
+					member: member.clone(),
+					roster_id: roster_id.clone(),
+				});
+
+				Ok(())
+			} else {
+				return Err(Error::<T>::RosterDoesNotExist.into());
+			}
+		})?;
+
+		T::Currency::reserve_named(
+			&pallet::Pallet::<T>::reserved_currency_name(
+				types::ReservedCurrencyReason::MembershipDues(roster_id.clone()),
+			),
+			&member,
+			T::MembershipDues::get(),
+		)
+		.map_err(|_| Error::<T>::InsufficientFunds)?;
+
+		Ok(().into())
+	}
 }
