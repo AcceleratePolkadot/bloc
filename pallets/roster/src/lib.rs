@@ -7,7 +7,6 @@ pub use pallet::*;
 
 use codec::Encode;
 use frame_support::{pallet_macros::*, traits::Get};
-use sp_runtime::traits::AccountIdConversion;
 use sp_std::{vec, vec::Vec};
 
 mod calls;
@@ -57,6 +56,10 @@ pub mod pallet {
 
 	type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 	type BalanceOf<T> = <<T as Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
+
+	/// The Treasury account
+	#[pallet::storage]
+	pub type Treasury<T: Config> = StorageValue<_, T::AccountId>;
 
 	/// A map of all Rosters
 	/// The `RosterId` is a v8 UUID generated from the md5 hash of the founder AccountId and the
@@ -116,8 +119,8 @@ impl<T: Config> Pallet<T> {
 	///
 	/// This actually does computation. If you need to keep using it, then make sure you cache the
 	/// value and only call this once.
-	pub fn account_id() -> T::AccountId {
-		T::PalletId::get().into_account_truncating()
+	pub fn account_id() -> Option<T::AccountId> {
+		Treasury::<T>::get()
 	}
 
 	pub fn reserved_currency_name(reason: ReservedCurrencyReason<T>) -> [u8; 27] {

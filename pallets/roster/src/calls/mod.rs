@@ -13,6 +13,26 @@ mod calls {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
+		/// Set the account to use as the treasury
+		///
+		/// The dispatch origin of this call must be root
+		///
+		/// - `treasury_account`: Account Id to use as the treasury
+		///
+		/// Emits `MemberAdded`
+		#[pallet::call_index(1)]
+		#[pallet::weight(Weight::from_parts(10_000, 0) + T::DbWeight::get().writes(1))]
+		pub fn set_treasury_account(
+			origin: OriginFor<T>,
+			treasury_account: T::AccountId,
+		) -> DispatchResultWithPostInfo {
+			// Can only be called by root
+			ensure_root(origin)?;
+			Treasury::<T>::put(treasury_account);
+
+			Ok(().into())
+		}
+
 		/// Create a new roster
 		///
 		/// New rosters are created as active

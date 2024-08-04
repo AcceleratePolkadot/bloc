@@ -363,7 +363,7 @@ impl<T: Config> ExpulsionCalls<T> {
 			// Slash the motioner's deposit
 			// The subject receives `ExpulsionProposalReparations` percent of the deposit
 			// The rest goes into the pot
-			let pot = pallet::Pallet::<T>::account_id();
+			let pot = pallet::Pallet::<T>::account_id().ok_or(Error::<T>::TreasuryDoesNotExist)?;
 			let balance_status = BalanceStatus::Free;
 			let reparations = Percent::from_percent(
 				T::ExpulsionProposalReparations::get().try_into().unwrap_or(50),
@@ -466,18 +466,17 @@ impl<T: Config> ExpulsionCalls<T> {
 				});
 
 				// Slash their membership dues
-				let pot = pallet::Pallet::<T>::account_id();
+				let pot =
+					pallet::Pallet::<T>::account_id().ok_or(Error::<T>::TreasuryDoesNotExist)?;
 				let balance_status = BalanceStatus::Free;
-				let repatriation_result = T::Currency::repatriate_all_reserved_named(
+				T::Currency::repatriate_all_reserved_named(
 					&pallet::Pallet::<T>::reserved_currency_name(
 						types::ReservedCurrencyReason::MembershipDues(roster_id),
 					),
 					&subject,
 					&pot,
 					balance_status,
-				);
-
-				ensure!(repatriation_result.is_ok(), Error::<T>::CouldNotSlash);
+				)?;
 			}
 		}
 

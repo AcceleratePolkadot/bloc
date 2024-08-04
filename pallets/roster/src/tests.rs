@@ -7,6 +7,7 @@ use sp_runtime::{AccountId32, Percent};
 pub const ALICE: AccountId32 = AccountId32::new([1u8; 32]);
 pub const BOB: AccountId32 = AccountId32::new([2u8; 32]);
 pub const CHARLIE: AccountId32 = AccountId32::new([3u8; 32]);
+pub const POT: AccountId32 = AccountId32::new([8u8; 32]);
 
 // Test RosterCalls
 #[test]
@@ -576,7 +577,7 @@ fn test_deposit_slashed_when_expulsion_proposal_dismissed_with_prejudice() {
 	new_test_ext().execute_with(|| {
 		System::set_block_number(1);
 
-		let pot: AccountId32 = pallet::Pallet::<Test>::account_id();
+		let pot: AccountId32 = POT;
 
 		let roster_deposit = <Test as pallet::Config>::NewRosterDeposit::get();
 		let nomination_deposit = <Test as pallet::Config>::NewNominationDeposit::get();

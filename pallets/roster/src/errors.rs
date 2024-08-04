@@ -4,6 +4,8 @@ use frame_support::pallet_macros::*;
 mod errors {
 	#[pallet::error]
 	pub enum Error<T> {
+		/// The Treasury account does not exist (you probably need to call `set_treasury_account``)
+		TreasuryDoesNotExist,
 		/// Account does not have enough funds available to perform the operation.
 		InsufficientFunds,
 		/// Could not slash funds.
