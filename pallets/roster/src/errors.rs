@@ -10,6 +10,8 @@ mod errors {
 		InsufficientFunds,
 		/// Could not slash funds.
 		CouldNotSlash,
+		/// Account is not a member of the roster.
+		NotAMember,
 		/// Voting period has not started yet
 		VotingPeriodHasNotStarted,
 		/// Voting period has ended.
@@ -58,6 +60,14 @@ mod errors {
 		ConversionError,
 		/// Could not add item to the list of concluded/closed items
 		CouldNotAddToConcluded,
+		/// Account is in lockout period
+		AccountIsInLockoutPeriod,
+		/// Cannot open multiple expulsion proposals
+		CannotOpenMultipleProposals,
+		/// Expulsion proposal already exists
+		ExpulsionProposalAlreadyExists,
+		/// Previous expulsion proposal was dismissed with prejudice
+		PreviousExpulsionProposalDismissedWithPrejudice,
 		/// The expulsion reason is invalid (probably a length issue)
 		InvalidExpulsionReason,
 		/// Expulsion proposal does not exist for that key
@@ -70,5 +80,7 @@ mod errors {
 		InsufficientSeconds,
 		/// Could not remove all expulsion proposals from storage
 		CouldNotRemoveAllExpulsionProposals,
+		/// Could not conclude expulsion proposal
+		CouldNotConcludeExpulsionProposal,
 	}
 }

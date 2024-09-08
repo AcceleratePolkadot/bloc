@@ -107,6 +107,7 @@ parameter_types! {
 	pub const ExpulsionReasonMaxLength: u32 = 5000;
 	pub const ExpulsionReasonMinLength: u32 = 1;
 	pub const ExpulsionProposalVotesMax: u32 = u32::MAX;
+	pub const ConcludedExpulsionProposalsMax: u32 = u32::MAX;
 	pub const ExpulsionProposalLockoutPeriod: BlockNumber = 1;
 	pub const ExpulsionProposalSuperMajority: u32 = 75;
 	pub const ExpulsionProposalQuorum: u32 = 50;
@@ -135,6 +136,7 @@ impl crate::Config for Test {
 	type ExpulsionReasonMaxLength = ExpulsionReasonMaxLength;
 	type ExpulsionReasonMinLength = ExpulsionReasonMinLength;
 	type ExpulsionProposalVotesMax = ExpulsionProposalVotesMax;
+	type ConcludedExpulsionProposalsMax = ConcludedExpulsionProposalsMax;
 	type ExpulsionProposalLockoutPeriod = ExpulsionProposalLockoutPeriod;
 	type ExpulsionProposalSuperMajority = ExpulsionProposalSuperMajority;
 	type ExpulsionProposalQuorum = ExpulsionProposalQuorum;

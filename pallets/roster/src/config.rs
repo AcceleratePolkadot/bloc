@@ -103,6 +103,12 @@ mod config {
 		#[pallet::constant]
 		type ExpulsionProposalVotesMax: Get<u32>;
 
+		/// Maximum number of expulsion proposals which can be concluded at the same time
+		/// Concluded expulsion proposals get removed when a new block is initialized
+		/// so this is effectively the number of concluded expulsion proposals per block
+		#[pallet::constant]
+		type ConcludedExpulsionProposalsMax: Get<u32>;
+
 		/// Period in which an account can not motion or second a new proposal after a previous
 		/// proposal was dismissed with prejudice
 		#[pallet::constant]

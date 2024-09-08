@@ -19,6 +19,13 @@ mod hooks {
 				});
 			}
 
+			// Remove all expulsion proposals which have concluded
+			for concluded_expulsion_proposal in ConcludedExpulsionProposals::<T>::take().iter() {
+				let (roster_id, motioner, subject) = concluded_expulsion_proposal;
+				// Remove expulsion proposal
+				ExpulsionProposals::<T>::remove((&roster_id, &motioner, &subject));
+			}
+
 			Weight::zero()
 		}
 	}

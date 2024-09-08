@@ -22,17 +22,16 @@ impl<T: Config> ExpulsionCalls<T> {
 
 	fn in_lockout_period(account: &T::AccountId, roster_id: &RosterId) -> bool {
 		// If account has seconded or motioned an expulsion proposal for this roster
-		// which was dismissed with prejudice, and it was < ExpulsionProposalLockoutPeriod blocks
-		// ago they are in the lockout period
-		!ExpulsionProposals::<T>::iter_prefix_values((&roster_id,)).any(|proposal| {
-			if let Some(decided_on) = proposal.decided_on {
-				return (proposal.seconds.contains(account) || proposal.motioner == *account)
-					&& proposal.status == ExpulsionProposalStatus::DismissedWithPrejudice
-					&& decided_on + T::ExpulsionProposalLockoutPeriod::get()
-						>= <frame_system::Pallet<T>>::block_number();
+		// which was dismissed with prejudice they could be in the lockout period
+		if let Some(lockout_ends) = ExpulsionProposalLockouts::<T>::get(account, roster_id) {
+			if lockout_ends > <frame_system::Pallet<T>>::block_number() {
+				return true;
+			} else {
+				// Lockout period has ended, remove the record to recover the storage space
+				ExpulsionProposalLockouts::<T>::remove(account, roster_id);
 			}
-			false
-		})
+		}
+		false
 	}
 
 	fn can_call_expulsion_vote(
@@ -41,30 +40,30 @@ impl<T: Config> ExpulsionCalls<T> {
 		roster: &Roster<T>,
 	) -> Result<bool, pallet::Error<T>> {
 		// Motioner must be a member of the roster.
-		ensure!(roster.members.contains(&motioner), Error::<T>::PermissionDenied);
+		ensure!(roster.members.contains(&motioner), Error::<T>::NotAMember);
 		// Subject must be a member of the roster
-		ensure!(roster.members.contains(&subject), Error::<T>::PermissionDenied);
+		ensure!(roster.members.contains(&subject), Error::<T>::NotAMember);
 		// Motioner must not be in lockout period
-		ensure!(Self::in_lockout_period(&motioner, &roster.id), Error::<T>::PermissionDenied);
-
-		// Motioner can only have 1 open expulsion proposal at a time
-		// Motioner can not open a new proposal against subject if a previous proposal was dismissed
-		// with prejudice
 		ensure!(
-			!ExpulsionProposals::<T>::iter_prefix((&roster.id, &motioner)).any(|(_, proposal)| {
-				(proposal.status == ExpulsionProposalStatus::Proposed
-					|| proposal.status == ExpulsionProposalStatus::Seconded
-					|| proposal.status == ExpulsionProposalStatus::Voting)
-					|| (proposal.subject == *subject
-						&& proposal.status == ExpulsionProposalStatus::DismissedWithPrejudice)
-			}),
-			Error::<T>::PermissionDenied
+			!Self::in_lockout_period(&motioner, &roster.id),
+			Error::<T>::AccountIsInLockoutPeriod
 		);
 
-		// Subject can only be the target of 1 open expulsion proposal at a time per roster
 		for open_proposal in roster.expulsion_proposals.iter() {
-			ensure!(subject != &open_proposal.1, Error::<T>::PermissionDenied);
+			// Motioner can only have 1 expulsion proposal at a time in this roster
+			ensure!(motioner != &open_proposal.0, Error::<T>::CannotOpenMultipleProposals);
+			// Subject can only be the target of 1 open expulsion proposal at a time per roster
+			ensure!(subject != &open_proposal.1, Error::<T>::ExpulsionProposalAlreadyExists);
 		}
+
+		// Motioner can not open a new proposal against subject if a previous proposal was dismissed
+		// with prejudice. Check if an entry exists in ExpulsionProposalsDismissedWithPrejudice
+		ensure!(
+			!ExpulsionProposalsDismissedWithPrejudice::<T>::contains_key((
+				&roster.id, &motioner, &subject
+			)),
+			Error::<T>::PreviousExpulsionProposalDismissedWithPrejudice
+		);
 
 		Ok(true)
 	}
@@ -83,7 +82,7 @@ impl<T: Config> ExpulsionCalls<T> {
 			Error::<T>::PermissionDenied
 		);
 		// Seconder must not be in lockout period
-		ensure!(Self::in_lockout_period(&seconder, &roster.id), Error::<T>::PermissionDenied);
+		ensure!(!Self::in_lockout_period(&seconder, &roster.id), Error::<T>::PermissionDenied);
 
 		Ok(true)
 	}
@@ -131,6 +130,16 @@ impl<T: Config> ExpulsionCalls<T> {
 			.expulsion_proposals
 			.retain(|(m, s)| m != motioner || s != subject);
 		Rosters::<T>::insert(&roster.id, updated_roster);
+	}
+
+	fn add_to_concluded_expulsion_proposals(
+		roster_id: &RosterId,
+		motioner: &T::AccountId,
+		subject: &T::AccountId,
+	) -> Result<(), pallet::Error<T>> {
+		ConcludedExpulsionProposals::<T>::try_append((roster_id, motioner, subject))
+			.map_err(|_| Error::<T>::CouldNotConcludeExpulsionProposal)?;
+		Ok(())
 	}
 
 	pub(crate) fn new(
@@ -393,6 +402,28 @@ impl<T: Config> ExpulsionCalls<T> {
 				&pot,
 				balance_status,
 			)?;
+
+			// Add to ExpulsionProposalsDismissedWithPrejudice
+			ExpulsionProposalsDismissedWithPrejudice::<T>::insert(
+				(&roster_id, &motioner, &subject),
+				(),
+			);
+
+			// Lockout motioner and subject from opening new expulsion proposals for `ExpulsionProposalLockoutPeriod`
+			ExpulsionProposalLockouts::<T>::insert(
+				&motioner,
+				&roster_id,
+				<frame_system::Pallet<T>>::block_number()
+					+ T::ExpulsionProposalLockoutPeriod::get(),
+			);
+			ExpulsionProposalLockouts::<T>::insert(
+				&subject,
+				&roster_id,
+				<frame_system::Pallet<T>>::block_number()
+					+ T::ExpulsionProposalLockoutPeriod::get(),
+			);
+
+			Self::add_to_concluded_expulsion_proposals(&roster_id, &motioner, &subject)?;
 		} else {
 			// Expulsion proposal must be in Voting state
 			ensure!(
@@ -437,9 +468,9 @@ impl<T: Config> ExpulsionCalls<T> {
 				Self::remove_proposal_from_roster(&roster, &motioner, &subject);
 				pallet::Pallet::deposit_event(Event::<T>::ExpulsionProposalDismissed {
 					closer,
-					motioner,
-					subject,
-					roster_id,
+					motioner: motioner.clone(),
+					subject: subject.clone(),
+					roster_id: roster_id.clone(),
 				});
 			} else {
 				// Proposal has passed
@@ -452,7 +483,7 @@ impl<T: Config> ExpulsionCalls<T> {
 				Self::remove_proposal_from_roster(&roster, &motioner, &subject);
 				pallet::Pallet::deposit_event(Event::<T>::ExpulsionProposalPassed {
 					closer,
-					motioner,
+					motioner: motioner.clone(),
 					subject: subject.clone(),
 					roster_id: roster_id.clone(),
 				});
@@ -471,13 +502,15 @@ impl<T: Config> ExpulsionCalls<T> {
 				let balance_status = BalanceStatus::Free;
 				T::Currency::repatriate_all_reserved_named(
 					&pallet::Pallet::<T>::reserved_currency_name(
-						types::ReservedCurrencyReason::MembershipDues(roster_id),
+						types::ReservedCurrencyReason::MembershipDues(roster_id.clone()),
 					),
 					&subject,
 					&pot,
 					balance_status,
 				)?;
 			}
+
+			Self::add_to_concluded_expulsion_proposals(&roster_id, &motioner, &subject)?;
 		}
 
 		Ok(().into())

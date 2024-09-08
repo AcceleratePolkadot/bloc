@@ -112,6 +112,51 @@ pub mod pallet {
 		),
 		ExpulsionProposal<T>,
 	>;
+
+	/// List of concluded expulsion proposals
+	///
+	/// When an expulsion proposal is closed it is added to this list. This saves us from having to
+	/// iterate over all expulsion proposals during block initialization the same as we do for
+	/// nominations
+	#[pallet::storage]
+	pub type ConcludedExpulsionProposals<T: Config> = StorageValue<
+		_,
+		BoundedVec<(RosterId, T::AccountId, T::AccountId), T::ConcludedExpulsionProposalsMax>,
+		ValueQuery,
+	>;
+
+	/// List of accounts currently in lockout period and the block number where the lockout expires
+	///
+	/// Storage keys are the AccountId of the locked-out account and the RosterId
+	#[pallet::storage]
+	pub type ExpulsionProposalLockouts<T: Config> = StorageDoubleMap<
+		_,
+		Blake2_128Concat,
+		T::AccountId,
+		Blake2_128Concat,
+		RosterId,
+		BlockNumberFor<T>,
+	>;
+
+	/// Expulsion proposals dismissed with prejudice
+	///
+	/// The existence of a storage item with a given key indicates that a expulsion proposal
+	/// with that key was dismissed with prejudice
+	///
+	/// Storage keys are:
+	///  - the id of the roster the proposal was to expel the subject from
+	///  - the motioner's accountId
+	///  - the subject's accountId
+	#[pallet::storage]
+	pub type ExpulsionProposalsDismissedWithPrejudice<T: Config> = StorageNMap<
+		_,
+		(
+			NMapKey<Blake2_128Concat, RosterId>,
+			NMapKey<Blake2_128Concat, T::AccountId>,
+			NMapKey<Blake2_128Concat, T::AccountId>,
+		),
+		(),
+	>;
 }
 
 impl<T: Config> Pallet<T> {
