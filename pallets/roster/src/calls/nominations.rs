@@ -184,7 +184,7 @@ impl<T: Config> NominationCalls<T> {
 		// - the voting period has passed ||
 		// - the ayes or nays have exceeded the voting threshold ||
 		// - all members have voted
-		let roster = Rosters::<T>::get(&roster_id).ok_or(Error::<T>::RosterDoesNotExist)?;
+		let mut roster = Rosters::<T>::get(&roster_id).ok_or(Error::<T>::RosterDoesNotExist)?;
 		let ayes =
 			nomination.votes.iter().filter(|v| v.vote == NominationVoteValue::Aye).count() as u32;
 		let nays =
@@ -224,6 +224,10 @@ impl<T: Config> NominationCalls<T> {
 
 			ConcludedNominations::<T>::try_append((&nominee, &roster_id))
 				.map_err(|_| Error::<T>::CouldNotAddToConcluded)?;
+
+			// Delete reference to nomination from roster
+			roster.nominations.retain(|n| n != &nominee);
+			Rosters::<T>::insert(&roster_id, roster);
 		}
 
 		pallet::Pallet::deposit_event(Event::<T>::NominationClosed {
@@ -251,6 +255,9 @@ impl<T: Config> NominationCalls<T> {
 					.members
 					.try_push(member.clone())
 					.map_err(|_| Error::<T>::CouldNotAddMember)?;
+
+				// Delete reference to nomination from roster
+				roster.nominations.retain(|n| n != &member);
 
 				pallet::Pallet::deposit_event(Event::<T>::MemberAdded {
 					member: member.clone(),
@@ -349,6 +356,17 @@ impl<T: Config> NominationCalls<T> {
 			T::MembershipDues::get(),
 		)
 		.map_err(|_| Error::<T>::InsufficientFunds)?;
+
+		Ok(().into())
+	}
+
+	pub(crate) fn force_add_members(
+		members: Vec<T::AccountId>,
+		roster_id: RosterId,
+	) -> DispatchResultWithPostInfo {
+		for member in members {
+			Self::force_add_member(member, roster_id.clone())?;
+		}
 
 		Ok(().into())
 	}
