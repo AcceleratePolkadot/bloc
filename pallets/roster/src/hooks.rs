@@ -9,14 +9,6 @@ mod hooks {
 			for concluded_nomination in ConcludedNominations::<T>::take().iter() {
 				let (nominee, roster_id) = concluded_nomination;
 				Nominations::<T>::remove(&nominee, &roster_id);
-
-				// Remove references to these nominations from the roster
-				let _ = Rosters::<T>::try_mutate(&roster_id, |roster| -> Result<(), ()> {
-					if let Some(roster) = roster {
-						roster.nominations.retain(|n| n != nominee);
-					}
-					Ok(())
-				});
 			}
 
 			// Remove all expulsion proposals which have concluded
