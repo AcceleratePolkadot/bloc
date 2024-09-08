@@ -52,6 +52,25 @@ mod calls {
 			NominationCalls::<T>::force_add_member(member, roster_id)
 		}
 
+		/// Force add members to a roster without a nomination vote
+		///
+		/// The dispatch origin of this call must be root
+		///
+		/// - `members`: Vec of Account Ids of the members to add
+		/// - `roster_id`: The UUID for the roster
+		///
+		/// Emits `MemberAdded`
+		#[pallet::call_index(3)]
+		#[pallet::weight(Weight::from_parts(10_000, 0) + T::DbWeight::get().writes(1))]
+		pub fn force_add_members(
+			origin: OriginFor<T>,
+			members: Vec<T::AccountId>,
+			roster_id: RosterId,
+		) -> DispatchResultWithPostInfo {
+			ensure_root(origin)?;
+			NominationCalls::<T>::force_add_members(members, roster_id)
+		}
+
 		/// Force expel a member to a roster without an expulsion proposal
 		///
 		/// The dispatch origin of this call must be root
@@ -60,7 +79,7 @@ mod calls {
 		/// - `roster_id`: The UUID for the roster
 		///
 		/// Emits `MemberRemoved`
-		#[pallet::call_index(3)]
+		#[pallet::call_index(4)]
 		#[pallet::weight(Weight::from_parts(10_000, 0) + T::DbWeight::get().writes(1))]
 		pub fn force_expel_member(
 			origin: OriginFor<T>,

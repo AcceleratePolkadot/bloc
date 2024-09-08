@@ -359,4 +359,15 @@ impl<T: Config> NominationCalls<T> {
 
 		Ok(().into())
 	}
+
+	pub(crate) fn force_add_members(
+		members: Vec<T::AccountId>,
+		roster_id: RosterId,
+	) -> DispatchResultWithPostInfo {
+		for member in members {
+			Self::force_add_member(member, roster_id.clone())?;
+		}
+
+		Ok(().into())
+	}
 }

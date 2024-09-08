@@ -161,9 +161,6 @@ pub mod pallet {
 
 impl<T: Config> Pallet<T> {
 	/// The account ID of the treasury pot.
-	///
-	/// This actually does computation. If you need to keep using it, then make sure you cache the
-	/// value and only call this once.
 	pub fn account_id() -> Option<T::AccountId> {
 		Treasury::<T>::get()
 	}
