@@ -1,6 +1,6 @@
 use crate::*;
 use frame_support::{pallet_prelude::*, traits::NamedReservableCurrency};
-use sp_runtime::Percent;
+use sp_runtime::{traits::Saturating, Percent};
 
 pub struct NominationCalls<T> {
 	_phantom: PhantomData<T>,
@@ -24,51 +24,55 @@ impl<T: Config> NominationCalls<T> {
 		Ok(true)
 	}
 
-	fn calculate_votes_threshold(
+	fn calculate_percentage_elapsed(
+		nomination: &Nomination<T>,
+	) -> Result<Percent, pallet::Error<T>> {
+		let voting_period = T::NominationVotingPeriod::get();
+		let start_block = nomination.nominated_on;
+		let current_block = <frame_system::Pallet<T>>::block_number();
+
+		let elapsed_blocks = current_block.saturating_sub(start_block);
+		let percentage_elapsed = Percent::from_rational(elapsed_blocks, voting_period);
+
+		Ok(percentage_elapsed)
+	}
+
+	// Calculate the threshold of votes required to reach quorum
+	// The percentage of votes required is equal to the percentage of the
+	// voting period that is remaining times `QuorumModifier` percent.
+	//
+	// The minimum votes required is `QuorumMin` percent of members
+	// and the maximum can't exceed the total number of members.
+	//
+	// For example:
+	// p = 60 (percentage of voting period remaining)
+	// m = 300 (total number of members)
+	// qm = 110 (quorum modifier percent)
+	// min = 50 (minimum quorum percent)
+	//
+	// (m * (p / 100)) * (qm / 100) = 198
+	//
+	// 198 is greater than (m * (min / 100)) so 198 votes is the minimum required for quorum
+	//
+	// If we change p to 40
+	//
+	// (m * (p / 100)) * (qm / 100) = 132
+	// 132 is less than (m * (min / 100)) so the number of votes required for quorum is 150
+	fn calculate_quorum_threshold(
 		roster: &Roster<T>,
 		nomination: &Nomination<T>,
 	) -> Result<u32, pallet::Error<T>> {
-		// Calculate what percentage of the nomination's voting period has passed
-		// p = voting period duration in blocks
-		// n = block nominated on
-		// b = current block
-		//
-		// percentage of voting period passed = ((b - n) / p) * 100
-		let p = TryInto::<u32>::try_into(T::NominationVotingPeriod::get())
-			.map_err(|_| Error::<T>::ConversionError)?;
-		let n = TryInto::<u32>::try_into(nomination.nominated_on)
-			.map_err(|_| Error::<T>::ConversionError)?;
-		let b = TryInto::<u32>::try_into(<frame_system::Pallet<T>>::block_number())
-			.map_err(|_| Error::<T>::ConversionError)?;
-		let blocks_passed = b - n;
-		let fraction_passed = match blocks_passed.checked_div(p) {
-			Some(result) => result,
-			None => return Err(Error::<T>::ConversionError),
-		};
+		let percentage_elapsed = Self::calculate_percentage_elapsed(&nomination)?;
+		let percentage_remaining = Percent::from_percent(100).saturating_sub(percentage_elapsed);
+		let quorum_minimum_percent = Percent::from_percent(T::QuorumMin::get().min(100));
+		let quorum_modifier = Percent::from_percent(T::QuorumModifier::get());
 
-		// Calculate the threshold of same votes required to end voting period early
-		// To pass the threshold the percentage of members who have voted in the same way must
-		// be greater or equal  to the percentage of the voting period remaining, plus an
-		// additional buffer.
-		//
-		// The minimum threshold required is always 50%.
-		//
-		// For example:
-		// p = 25 (percentage of voting period passed)
-		// m = 300 (total number of members)
-		//
-		// number of members who must vote the same way to close the nomination early
-		// (m / 100)(100 - p * 0.8) = 240
-		let fraction_remaining = 1 - (Percent::from_percent(80) * fraction_passed);
-		let threshold_percentage = match fraction_remaining.checked_mul(100) {
-			Some(result) if result < 50 => Percent::from_percent(50),
-			Some(result) => Percent::from_percent(result.try_into().unwrap_or(100)),
-			None => return Err(Error::<T>::ConversionError),
-		};
+		let number_of_members = roster.members.len() as u32;
+		let minimum_threshold = quorum_minimum_percent.mul_ceil(number_of_members);
+		let number_of_votes_required =
+			quorum_modifier.mul_ceil(percentage_remaining.mul_ceil(number_of_members));
 
-		let threshold = threshold_percentage * roster.members.len() as u32;
-
-		Ok(threshold)
+		Ok(number_of_votes_required.max(minimum_threshold).min(number_of_members))
 	}
 
 	pub(crate) fn new(
@@ -178,7 +182,8 @@ impl<T: Config> NominationCalls<T> {
 		// Check if nomination is in voting period
 		let mut nomination = Nominations::<T>::get(&nominee, &roster_id)
 			.ok_or(Error::<T>::NominationDoesNotExist)?;
-		Self::in_voting_period(&nomination)?;
+
+		ensure!(nomination.status == NominationStatus::Pending, Error::<T>::VotingPeriodHasEnded);
 
 		// Voting can end if:
 		// - the voting period has passed ||
@@ -189,13 +194,12 @@ impl<T: Config> NominationCalls<T> {
 			nomination.votes.iter().filter(|v| v.vote == NominationVoteValue::Aye).count() as u32;
 		let nays =
 			nomination.votes.iter().filter(|v| v.vote == NominationVoteValue::Nay).count() as u32;
-		let votes_threshold = Self::calculate_votes_threshold(&roster, &nomination)?;
+		let quorum_threshold = Self::calculate_quorum_threshold(&roster, &nomination)?;
 
 		ensure!(
 			nomination.nominated_on + T::NominationVotingPeriod::get()
 				< <frame_system::Pallet<T>>::block_number()
-				|| ayes >= votes_threshold
-				|| nays >= votes_threshold
+				|| ayes + nays >= quorum_threshold
 				|| nomination.votes.len() >= roster.members.len(),
 			Error::<T>::VotingPeriodHasNotEnded
 		);

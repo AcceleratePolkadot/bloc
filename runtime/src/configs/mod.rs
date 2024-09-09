@@ -285,6 +285,8 @@ parameter_types! {
 	pub const MembershipDues: Balance = 100 * UNIT;
 	pub const NominationVotesMax: u32 = u32::MAX;
 	pub const NominationVotingPeriod: BlockNumber = MINUTES * 5;
+	pub const QuorumModifier: u8 = 110;
+	pub const QuorumMin: u8 = 50;
 	pub const ConcludedNominationsMax: u32 = u32::MAX;
 	pub const NominationsPerRosterMax: u32 = u32::MAX;
 	pub const NewExpulsionProposalDeposit: Balance = 500 * UNIT;
@@ -316,6 +318,8 @@ impl pallet_roster::Config for Runtime {
 	type NewNominationDeposit = NewNominationDeposit;
 	type NominationVotesMax = NominationVotesMax;
 	type NominationVotingPeriod = NominationVotingPeriod;
+	type QuorumModifier = QuorumModifier;
+	type QuorumMin = QuorumMin;
 	type ConcludedNominationsMax = ConcludedNominationsMax;
 	type NominationsPerRosterMax = NominationsPerRosterMax;
 	type NewExpulsionProposalDeposit = NewExpulsionProposalDeposit;

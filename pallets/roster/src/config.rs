@@ -46,6 +46,14 @@ mod config {
 		#[pallet::constant]
 		type NominationVotingPeriod: Get<BlockNumberFor<Self>>;
 
+		/// Quorum modifier percentage
+		#[pallet::constant]
+		type QuorumModifier: Get<u8>;
+
+		/// Minimum percentage of members required for quorum
+		#[pallet::constant]
+		type QuorumMin: Get<u8>;
+
 		/// Maximum number of nominations that can be in progress per roster
 		/// at any one time
 		#[pallet::constant]
