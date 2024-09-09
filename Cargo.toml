@@ -12,6 +12,7 @@ repository = "https://github.com/AcceleratePolkadot/bloc"
 members = [
     "node",
     "runtime",
+    "pallets/roster",
 ]
 resolver = "2"
 
@@ -73,6 +74,7 @@ sc-tracing = "33.0.0"
 sc-transaction-pool = "33.0.0"
 sc-transaction-pool-api = "33.0.0"
 sp-api = { version = "31.0.0", default-features = false }
+sp-arithmetic = { version = "23.0.0", default-features = false }
 sp-block-builder = { version = "31.0.0", default-features = false }
 sp-blockchain = "33.0.0"
 sp-consensus-aura = { version = "0.37.0", default-features = false }
